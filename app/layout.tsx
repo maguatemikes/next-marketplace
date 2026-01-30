@@ -1,15 +1,60 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+
 import "./globals.css";
+import { Navigation } from "@/components/Navigations";
+import { Footer } from "@/components/Footer";
+import localFont from "next/font/local";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const helveticaNeue = localFont({
+  src: [
+    {
+      path: "../public/fonts/helvetica-neue/HelveticaNeueThin.otf",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/helvetica-neue/HelveticaNeueUltraLight.otf",
+      weight: "200",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/helvetica-neue/HelveticaNeueLight.otf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/helvetica-neue/HelveticaNeueRoman.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/helvetica-neue/HelveticaNeueMedium.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/helvetica-neue/HelveticaNeueBold.otf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/helvetica-neue/HelveticaNeueHeavy.otf",
+      weight: "800",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/helvetica-neue/HelveticaNeueBlack.otf",
+      weight: "900",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/helvetica-neue/HelveticaNeueItalic.ttf",
+      weight: "400",
+      style: "italic",
+    },
+  ],
+  variable: "--font-helvetica-neue",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -23,11 +68,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en" className={helveticaNeue.variable}>
+      <body className={helveticaNeue.className}>
+        <Navigation />
         {children}
+        <Footer />
       </body>
     </html>
   );
