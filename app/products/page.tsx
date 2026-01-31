@@ -1,9 +1,36 @@
 import { ProductFilters } from "@/components/product/ProductFilters";
+import type { Metadata } from "next";
 
-const fetchProduct = async () => {
+const ITEMS_PER_PAGE = 9;
+
+// ✅ Fetch products with filters
+const fetchProduct = async (
+  page: number = 1,
+  filters: {
+    category?: string;
+    brand?: string;
+    search?: string;
+    vendor?: string;
+  } = {},
+) => {
   try {
+    // Build query params with filters
+    const params = new URLSearchParams({
+      page: page.toString(),
+      per_page: ITEMS_PER_PAGE.toString(),
+    });
+
+    // Add filters to API request
+    if (filters.search) params.append("search", filters.search);
+    if (filters.category && filters.category !== "all")
+      params.append("category", filters.category);
+    if (filters.brand && filters.brand !== "all")
+      params.append("brand", filters.brand);
+    if (filters.vendor && filters.vendor !== "all")
+      params.append("vendor", filters.vendor);
+
     const res = await fetch(
-      "https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/products",
+      `https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/products?${params.toString()}`,
       {
         next: { revalidate: 60 },
         headers: { Accept: "application/json" },
@@ -12,14 +39,17 @@ const fetchProduct = async () => {
 
     if (!res.ok) {
       console.error(`Products API failed: ${res.status}`);
-      return [];
+      return { products: [], total: 0 };
     }
 
     const data = await res.json();
-    return data.products || [];
+    return {
+      products: data.products || [],
+      total: data.total || 0,
+    };
   } catch (error) {
     console.error("Error fetching products:", error);
-    return [];
+    return { products: [], total: 0 };
   }
 };
 
@@ -39,7 +69,11 @@ const fetchCategory = async () => {
     }
 
     const data = await res.json();
-    return data;
+
+    return data.map((cat: any) => ({
+      name: cat.name,
+      slug: cat.slug,
+    }));
   } catch (error) {
     console.error("Error fetching categories:", error);
     return [];
@@ -62,17 +96,173 @@ const fetchBrands = async () => {
     }
 
     const data = await res.json();
-    return data;
+
+    return data.map((brand: any) => ({
+      name: brand.name,
+      slug: brand.slug,
+    }));
   } catch (error) {
     console.error("Error fetching brands:", error);
     return [];
   }
 };
 
-export default async function ProductCatalogPage() {
-  // ✅ Server fetches all data in parallel (cached)
-  const [products, categories, brands] = await Promise.all([
-    fetchProduct(),
+// ✅ Generate dynamic metadata for SEO
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    page?: string;
+    category?: string;
+    brand?: string;
+    search?: string;
+    vendor?: string;
+  }>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const currentPage = Number(params.page) || 1;
+
+  // Build dynamic title based on filters
+  let title = "All Products";
+  const titleParts: string[] = [];
+
+  if (params.search) {
+    titleParts.push(`Search: ${params.search}`);
+  }
+  if (params.category && params.category !== "all") {
+    titleParts.push(
+      params.category.charAt(0).toUpperCase() + params.category.slice(1),
+    );
+  }
+  if (params.brand && params.brand !== "all") {
+    titleParts.push(params.brand);
+  }
+  if (params.vendor && params.vendor !== "all") {
+    titleParts.push(`by ${params.vendor}`);
+  }
+
+  if (titleParts.length > 0) {
+    title = titleParts.join(" - ");
+  }
+
+  // Add page number to title if not on first page
+  if (currentPage > 1) {
+    title += ` - Page ${currentPage}`;
+  }
+
+  title += " | ShopLocal";
+
+  // Build dynamic description
+  let description =
+    "Browse unique products from independent sellers on ShopLocal.";
+  if (params.search) {
+    description = `Search results for "${params.search}" - Find unique products from trusted sellers.`;
+  } else if (params.category && params.category !== "all") {
+    description = `Shop ${params.category} products from independent sellers. Quality items at great prices.`;
+  }
+
+  // Build canonical URL
+  const baseUrl = "https://shoplocal.kinsta.cloud";
+  const urlParams = new URLSearchParams();
+  if (params.category && params.category !== "all")
+    urlParams.append("category", params.category);
+  if (params.brand && params.brand !== "all")
+    urlParams.append("brand", params.brand);
+  if (params.search) urlParams.append("search", params.search);
+  if (params.vendor && params.vendor !== "all")
+    urlParams.append("vendor", params.vendor);
+  if (currentPage > 1) urlParams.append("page", currentPage.toString());
+
+  const canonicalUrl = `${baseUrl}/products${urlParams.toString() ? `?${urlParams.toString()}` : ""}`;
+
+  // Build keywords
+  const keywords = [
+    "wholesale products",
+    "independent sellers",
+    "online marketplace",
+    "buy wholesale",
+    params.category,
+    params.brand,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  return {
+    title,
+    description,
+    keywords,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: canonicalUrl,
+      siteName: "ShopLocal",
+      locale: "en_US",
+      images: [
+        {
+          url: `${baseUrl}/og-image-products.jpg`,
+          width: 1200,
+          height: 630,
+          alt: "ShopLocal Products",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      site: "@shoplocal",
+      creator: "@shoplocal",
+      images: [`${baseUrl}/og-image-products.jpg`],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+    ...(currentPage > 1 && {
+      other: {
+        "pagination-prev": `${baseUrl}/products?${new URLSearchParams({ ...Object.fromEntries(urlParams), page: (currentPage - 1).toString() }).toString()}`,
+      },
+    }),
+  };
+}
+
+// ✅ Product Catalog Page Component
+export default async function ProductCatalogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    page?: string;
+    category?: string;
+    brand?: string;
+    search?: string;
+    vendor?: string;
+  }>;
+}) {
+  const params = await searchParams;
+  const currentPage = Number(params.page) || 1;
+
+  // Extract filters from URL
+  const filters = {
+    category: params.category,
+    brand: params.brand,
+    search: params.search,
+    vendor: params.vendor,
+  };
+
+  // Pass filters to fetch function
+  const [productData, categories, brands] = await Promise.all([
+    fetchProduct(currentPage, filters),
     fetchCategory(),
     fetchBrands(),
   ]);
@@ -91,9 +281,9 @@ export default async function ProductCatalogPage() {
         </div>
       </section>
 
-      {/* ✅ Client component handles filtering + rendering */}
       <ProductFilters
-        products={products}
+        products={productData.products}
+        totalFromServer={productData.total}
         categories={categories}
         brands={brands}
       />
@@ -118,9 +308,3 @@ export default async function ProductCatalogPage() {
     </div>
   );
 }
-
-// ✅ Optional: Add metadata
-export const metadata = {
-  title: "All Products | ShopLocal",
-  description: "Browse unique products from independent sellers",
-};

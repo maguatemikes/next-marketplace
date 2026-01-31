@@ -1,20 +1,16 @@
+"use client";
+
+import { useState } from "react";
 import { ShoppingCart, Phone, LogIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { SearchBar } from "./nav/SearchBar";
 import { MobileMenuButton } from "./nav/MobileMenuButton";
+import { CartDrawer } from "./CartDrawer";
 
-/**
- * Navigation Component
- * Main navigation with three-tier design:
- * - White top bar with logo, search, and user actions
- * - Dark navigation bar with main menu links
- * - Green promotional banner
- *
- * This is a Server Component in Next.js by default.
- * Client-side interactivity (useState) is handled by separate child components.
- */
 export function Navigation() {
+  const [cartOpen, setCartOpen] = useState(false); // <- control the drawer
+
   const mainNavLinks = [
     { label: "Shop", path: "/products" },
     { label: "Vendors", path: "/vendors" },
@@ -27,11 +23,9 @@ export function Navigation() {
 
   return (
     <nav className="sticky top-0 z-50">
-      {/* Top Bar - White section with logo, search, and actions */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
             <Link href="/" className="cursor-pointer">
               <Image
                 src="/berlin-logo.png"
@@ -41,16 +35,14 @@ export function Navigation() {
               />
             </Link>
 
-            {/* Search Bar - Center (Desktop only) */}
             <div className="hidden md:flex flex-1 max-w-md mx-8">
               <SearchBar />
             </div>
 
-            {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-6">
-              {/* Cart Button */}
-              <Link
-                href="/cart"
+              {/* Cart Button - now opens drawer */}
+              <button
+                onClick={() => setCartOpen(true)}
                 className="flex flex-col items-center gap-1 text-gray-700 hover:text-gray-900 transition-colors relative"
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -58,9 +50,9 @@ export function Navigation() {
                   3
                 </span>
                 <span className="text-xs">Checkout</span>
-              </Link>
+              </button>
 
-              {/* Contact Us Button */}
+              {/* Contact Us */}
               <Link
                 href="/contact"
                 className="flex flex-col items-center gap-1 text-gray-700 hover:text-gray-900 transition-colors"
@@ -70,7 +62,6 @@ export function Navigation() {
               </Link>
             </div>
 
-            {/* Right Action Icons */}
             <div className="flex items-center justify-end md:justify-between ml-8">
               <div className="hidden md:flex items-center gap-6">
                 <div className="flex items-center gap-3">
@@ -89,8 +80,6 @@ export function Navigation() {
                   </Link>
                 </div>
               </div>
-
-              {/* Mobile Menu Toggle Button */}
               <div className="md:hidden">
                 <MobileMenuButton />
               </div>
@@ -99,7 +88,6 @@ export function Navigation() {
         </div>
       </div>
 
-      {/* Main Nav Bar - Dark section with main menu links */}
       <div className="bg-[#272621] hidden md:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-12">
@@ -116,13 +104,15 @@ export function Navigation() {
         </div>
       </div>
 
-      {/* Promo Bar - Green promotional banner */}
       <div className="bg-green-500 text-white text-center py-2">
         <p className="text-sm">
           <span className="font-semibold">Free Shipping</span> on Orders over
           $50 | <span className="font-semibold">Support Local Sellers</span>
         </p>
       </div>
+
+      {/* Cart Drawer */}
+      <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
     </nav>
   );
 }

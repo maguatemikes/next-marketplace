@@ -19,6 +19,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import ProductDetailCta from "@/components/product/ProductDetailCta";
 
 // ✅ Component props interface (Next.js 15: params is a Promise)
 interface ProductDetailPageProps {
@@ -38,10 +39,8 @@ interface Product {
   raw_data?: {
     imageUrl?: string;
   };
-  vendor?: {
-    store_name?: string;
-    store_slug?: string;
-  };
+  vendor?: string;
+  verndorSlug: string;
   category?: string;
   rating?: number;
   reviewCount?: number;
@@ -50,12 +49,14 @@ interface Product {
   isNew?: boolean;
   isTrending?: boolean;
   acceptsOffers?: boolean;
+  isAffliate?: boolean;
+  externalUrl?: string;
 }
 
 // Fetch product from API
 const fetchProductBySlug = async (slug: string): Promise<Product> => {
   const res = await fetch(
-    `https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/product/${slug}`,
+    `https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/product-short/${slug}`,
     { next: { revalidate: 60 } },
   );
   if (!res.ok) throw new Error("Failed to fetch product");
@@ -84,7 +85,7 @@ export async function generateMetadata({
     product?.raw_data?.imageUrl?.trim?.() ||
     "/placeholder.png";
 
-  const vendorName = product.vendor?.store_name || "trusted sellers";
+  const vendorName = product.vendor || "trusted sellers";
 
   const title = `${product.name} | ShopLocal`;
   const description =
@@ -162,17 +163,15 @@ export default async function ProductDetails({
         <div>
           <div className="flex items-center gap-2 mb-4">
             <span className="text-gray-600">Sold by</span>
-            {product.vendor?.store_slug ? (
+            {product.vendor ? (
               <Link
-                href={`/vendor/${product.vendor.store_slug}`}
+                href={`/vendor/${product.verndorSlug}`}
                 className="text-green-500 hover:text-green-600"
               >
-                {product.vendor.store_name || "Unknown Vendor"}
+                {product.vendor}
               </Link>
             ) : (
-              <span className="text-green-500">
-                {product.vendor?.store_name || "Unknown Vendor"}
-              </span>
+              <span className="text-green-500">{product.vendor}</span>
             )}
             <Badge variant="outline">Verified Seller</Badge>
           </div>
@@ -231,16 +230,7 @@ export default async function ProductDetails({
 
           {/* Quantity & Add to Cart */}
           <div className="flex gap-4 mb-8">
-            <Button
-              size="lg"
-              className="flex-1 bg-[#F57C00] hover:bg-[#E67000] rounded-xl"
-              disabled={!product.stock || product.stock <= 0}
-            >
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              {product.stock && product.stock > 0
-                ? "Add to Cart"
-                : "Out of Stock"}
-            </Button>
+            <ProductDetailCta product={product} />
             <Button size="lg" variant="outline" className="rounded-xl">
               <Heart className="w-5 h-5" />
             </Button>

@@ -1,7 +1,7 @@
-// app/components/product/ProductFilters.tsx
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Grid3x3,
   Tag,
@@ -19,35 +19,65 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { ProductCard } from "@/components/product/ProductCard";
-import { ProductSearchBar } from "@/components/product/ProductSearchBar";
+
+// ✅ FIX: Add Product interface
+interface Product {
+  id: number | string;
+  name: string;
+  slug: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  category: string;
+  vendor?: string | { name: string; slug?: string };
+  vendorSlug?: string;
+  rating?: number;
+  reviewCount?: number;
+  stock?: number;
+  inStock?: boolean;
+  isNew?: boolean;
+  isTrending?: boolean;
+  acceptsOffers?: boolean;
+  upc?: string;
+}
 
 interface ProductFiltersProps {
-  products: any[];
+  products: Product[]; // ✅ FIX: Changed from [] to Product[]
   categories: { name: string; slug: string }[];
   brands: { name: string; slug: string }[];
+  totalFromServer: number;
 }
+
+const ITEMS_PER_PAGE = 9;
 
 export function ProductFilters({
   products,
   categories,
   brands,
+  totalFromServer,
 }: ProductFiltersProps) {
-  // ✅ Fix hydration: only render after mount
-  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get("page")) || 1;
 
-  // ✅ Client-side filter state
+  // ✅ Initialize filters from URL
   const [filters, setFilters] = useState({
-    category: "all",
-    brand: "all",
+    category: searchParams.get("category") || "all",
+    brand: searchParams.get("brand") || "all",
     acceptsOffers: false,
-    upc: "",
-    search: "",
+    upc: searchParams.get("upc") || "",
+    search: searchParams.get("search") || "",
   });
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const hasActiveFilters =
     filters.category !== "all" ||
@@ -56,15 +86,46 @@ export function ProductFilters({
     filters.upc !== "" ||
     filters.search !== "";
 
-  // ✅ Handle filter changes
-  const handleFilterChange = (field: string, value: any) => {
+  // ✅ FIX: Add proper type for value parameter
+  const handleFilterChange = (field: string, value: string | boolean) => {
     setFilters((prev) => ({
       ...prev,
       [field]: value,
     }));
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", "1"); // Reset to page 1
+
+    // ✅ Add/remove filter params in URL
+    if (field === "category" && value !== "all") {
+      params.set("category", value as string);
+    } else if (field === "category") {
+      params.delete("category");
+    }
+
+    if (field === "brand" && value !== "all") {
+      params.set("brand", value as string);
+    } else if (field === "brand") {
+      params.delete("brand");
+    }
+
+    if (field === "search" && value) {
+      params.set("search", value as string);
+    } else if (field === "search") {
+      params.delete("search");
+    }
+
+    // UPC is client-side only (not in API)
+    if (field === "upc" && value) {
+      params.set("upc", value as string);
+    } else if (field === "upc") {
+      params.delete("upc");
+    }
+
+    // Update URL (triggers server component re-render)
+    router.push(`?${params.toString()}`);
   };
 
-  // ✅ Clear all filters
   const handleClearFilters = () => {
     setFilters({
       category: "all",
@@ -73,115 +134,84 @@ export function ProductFilters({
       upc: "",
       search: "",
     });
+
+    // Clear all params except page
+    router.push("?page=1");
   };
 
-  // ✅ Client-side filtering (instant, runs in browser)
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", page.toString());
+    router.push(`?${params.toString()}`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // ✅ CHANGE: Only client-side filter for UPC and acceptsOffers
+  // (Server already filtered by category, brand, search)
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      // Search filter
-      if (
-        filters.search &&
-        !product.name?.toLowerCase().includes(filters.search.toLowerCase())
-      ) {
-        return false;
-      }
-
-      // Category filter
-      if (filters.category !== "all") {
-        const productCategories =
-          product.categories?.map((c: any) => c.slug) || [];
-        if (!productCategories.includes(filters.category)) {
-          return false;
-        }
-      }
-
-      // Brand filter
-      if (filters.brand !== "all") {
-        const productBrands = product.brands?.map((b: any) => b.slug) || [];
-        if (!productBrands.includes(filters.brand)) {
-          return false;
-        }
-      }
-
-      // UPC filter
+      // UPC filter (not supported by API, so filter client-side)
       if (filters.upc && !product.upc?.includes(filters.upc)) {
         return false;
       }
 
-      // Accepts offers filter
-      if (filters.acceptsOffers && !product.accepts_offers) {
+      // Accepts Offers filter (not supported by API)
+      if (filters.acceptsOffers && !product.acceptsOffers) {
         return false;
       }
 
       return true;
     });
-  }, [products, filters]);
+  }, [products, filters.upc, filters.acceptsOffers]);
 
-  // ✅ Show loading skeleton until mounted (prevents hydration mismatch)
-  if (!mounted) {
-    return (
-      <>
-        {/* Search Bar Skeleton */}
-        <section className="border-b border-gray-100 py-6 sticky top-20 z-40 backdrop-blur-md bg-white/95">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
-          </div>
-        </section>
+  // ✅ Pagination calculations (unchanged)
+  const totalPages = Math.ceil(totalFromServer / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + filteredProducts.length;
+  const paginatedProducts = filteredProducts;
 
-        {/* Content Skeleton */}
-        <section className="py-12">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row gap-8">
-              {/* Sidebar Skeleton */}
-              <aside className="lg:w-64 flex-shrink-0">
-                <div className="bg-white rounded-2xl p-6 border border-gray-100">
-                  <div className="animate-pulse space-y-6">
-                    <div className="h-8 bg-gray-200 rounded" />
-                    <div className="h-10 bg-gray-200 rounded" />
-                    <div className="h-10 bg-gray-200 rounded" />
-                    <div className="h-10 bg-gray-200 rounded" />
-                  </div>
-                </div>
-              </aside>
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = []; // ✅ FIX: Add type annotation
+    const maxVisiblePages = 5;
 
-              {/* Grid Skeleton */}
-              <div className="flex-1">
-                <div className="mb-6">
-                  <div className="h-6 bg-gray-200 rounded w-48 animate-pulse" />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div
-                      key={i}
-                      className="bg-white rounded-xl overflow-hidden shadow-sm"
-                    >
-                      <div className="aspect-square bg-gray-200 animate-pulse" />
-                      <div className="p-4 space-y-3">
-                        <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                        <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
-                        <div className="h-6 bg-gray-200 rounded w-1/2 animate-pulse" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </>
-    );
-  }
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, "ellipsis", totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(
+          1,
+          "ellipsis",
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages,
+        );
+      } else {
+        pages.push(
+          1,
+          "ellipsis",
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          "ellipsis",
+          totalPages,
+        );
+      }
+    }
+
+    return pages;
+  };
 
   return (
     <>
       {/* Search Bar */}
       <section className="border-b border-gray-100 py-6 sticky top-20 z-40 backdrop-blur-md bg-white/95">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          {/* <ProductSearchBar
-            search={filters.search}
-            sortBy="newest"
-            onSearchChange={(value) => handleFilterChange("search", value)}
-          /> */}
+          {/* Optional: ProductSearchBar component */}
         </div>
       </section>
 
@@ -293,7 +323,7 @@ export function ProductFilters({
                     <Checkbox
                       checked={filters.acceptsOffers}
                       onCheckedChange={(c) =>
-                        handleFilterChange("acceptsOffers", c)
+                        handleFilterChange("acceptsOffers", c as boolean)
                       }
                     />
                     <div className="flex items-center gap-2">
@@ -310,19 +340,78 @@ export function ProductFilters({
             {/* Product Grid */}
             <div className="flex-1">
               {/* Results count */}
-              <div className="mb-6">
+              <div className="mb-6 flex items-center justify-between">
                 <p className="text-sm text-gray-600">
-                  Showing {filteredProducts.length} of {products.length}{" "}
+                  Showing {startIndex + 1}-{endIndex} of {totalFromServer}{" "}
                   products
                 </p>
+                {totalPages > 1 && (
+                  <p className="text-sm text-gray-600">
+                    Page {currentPage} of {totalPages}
+                  </p>
+                )}
               </div>
 
               {filteredProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
+                <>
+                  {/* Product Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    {paginatedProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <Pagination className="mt-8">
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() =>
+                              handlePageChange(Math.max(1, currentPage - 1))
+                            }
+                            className={
+                              currentPage === 1
+                                ? "pointer-events-none opacity-50"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+
+                        {getPageNumbers().map((page, index) => (
+                          <PaginationItem key={index}>
+                            {page === "ellipsis" ? (
+                              <PaginationEllipsis />
+                            ) : (
+                              <PaginationLink
+                                onClick={() => handlePageChange(page as number)}
+                                isActive={currentPage === page}
+                                className="cursor-pointer"
+                              >
+                                {page}
+                              </PaginationLink>
+                            )}
+                          </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() =>
+                              handlePageChange(
+                                Math.min(totalPages, currentPage + 1),
+                              )
+                            }
+                            className={
+                              currentPage === totalPages
+                                ? "pointer-events-none opacity-50"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  )}
+                </>
               ) : (
                 <div className="text-center py-24">
                   <p className="text-gray-600 mb-4">No products found</p>

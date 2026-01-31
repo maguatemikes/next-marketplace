@@ -22,6 +22,9 @@ interface ProductCardProps {
     isNew?: boolean;
     isTrending?: boolean;
     acceptsOffers?: boolean;
+    isAffliate?: boolean;
+    externalUrl?: string;
+    upc?: string;
   };
 }
 
@@ -88,23 +91,15 @@ export function ProductCard({ product }: ProductCardProps) {
         </button>
 
         {/* Top Badges */}
-        {/* <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
-          {hasDiscount && (
-            <span className="px-2.5 py-1 bg-red-600 text-white rounded-lg text-xs">
-              -{discountPercentage}%
-            </span>
-          )}
-          {product.isNew && (
-            <span className="px-2.5 py-1 bg-green-600 text-white rounded-lg text-xs">
-              New
-            </span>
-          )}
-          {product.isTrending && (
-            <span className="px-2.5 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg text-xs flex items-center gap-1">
-              <Flame className="w-3 h-3" /> Trending
-            </span>
-          )}
-        </div> */}
+        {
+          <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+            {product.isNew ? (
+              <span className="px-2.5 py-1 bg-green-600 text-white rounded-lg text-xs">
+                New
+              </span>
+            ) : null}
+          </div>
+        }
 
         {/* Bottom Badges */}
         <div className="absolute bottom-3 left-3 flex gap-2 z-10">
@@ -164,10 +159,26 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <button
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (product.isAffliate && product.externalUrl) {
+              window.open(product.externalUrl, "_blank"); // redirect to affiliate site
+            } else {
+              // normal add to cart logic
+              console.log("Add to Cart clicked", product.id);
+            }
+          }}
           className="w-full mt-4 bg-[#F57C00] text-white px-4 py-2.5 rounded-md hover:bg-[#E67000] transition-colors text-sm flex items-center justify-center gap-2"
         >
-          <ShoppingCart className="w-4 h-4" /> Add to Cart
+          {product.isAffliate ? (
+            <>
+              <ShoppingCart className="w-4 h-4" /> Buy Now
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="w-4 h-4" /> Add to Cart
+            </>
+          )}
         </button>
       </div>
     </div>
