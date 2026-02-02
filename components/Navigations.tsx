@@ -7,9 +7,11 @@ import Link from "next/link";
 import { SearchBar } from "./nav/SearchBar";
 import { MobileMenuButton } from "./nav/MobileMenuButton";
 import { CartDrawer } from "./CartDrawer";
+import { useCartItemCount } from "@/store/useCartStore";
 
 export function Navigation() {
   const [cartOpen, setCartOpen] = useState(false); // <- control the drawer
+  const itemCount = useCartItemCount();
 
   const mainNavLinks = [
     { label: "Shop", path: "/products" },
@@ -47,7 +49,7 @@ export function Navigation() {
               >
                 <ShoppingCart className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
-                  3
+                  {itemCount}
                 </span>
                 <span className="text-xs">Checkout</span>
               </button>

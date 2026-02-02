@@ -69,7 +69,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={helveticaNeue.variable}>
-      <body className={helveticaNeue.className}>
+      <body>
         <Navigation />
         {children}
         <Footer />

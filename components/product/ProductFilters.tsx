@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Grid3x3,
@@ -59,6 +59,7 @@ interface ProductFiltersProps {
 }
 
 const ITEMS_PER_PAGE = 9;
+const SEARCH_DEBOUNCE_MS = 500; // ✅ NEW: Debounce delay
 
 export function ProductFilters({
   products,
@@ -70,6 +71,11 @@ export function ProductFilters({
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get("page")) || 1;
 
+  // ✅ NEW: Separate state for immediate search input (no debounce)
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get("search") || "",
+  );
+
   // ✅ Initialize filters from URL
   const [filters, setFilters] = useState({
     category: searchParams.get("category") || "all",
@@ -78,6 +84,8 @@ export function ProductFilters({
     upc: searchParams.get("upc") || "",
     search: searchParams.get("search") || "",
   });
+
+  // ✅ NEW: Debounced search effect
 
   const hasActiveFilters =
     filters.category !== "all" ||
@@ -126,7 +134,22 @@ export function ProductFilters({
     router.push(`?${params.toString()}`);
   };
 
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      // Only update filter if search value actually changed
+      if (searchInput !== filters.search) {
+        handleFilterChange("search", searchInput);
+      }
+    }, SEARCH_DEBOUNCE_MS);
+
+    // Cleanup: cancel timeout if user types again before delay expires
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]); // Only re-run when searchInput changes
+
   const handleClearFilters = () => {
+    // ✅ NEW: Also clear searchInput state
+    setSearchInput("");
+
     setFilters({
       category: "all",
       brand: "all",
@@ -237,7 +260,7 @@ export function ProductFilters({
                   )}
                 </div>
 
-                {/* Search */}
+                {/* Search - ✅ CHANGED: Now uses searchInput state with debounce */}
                 <div className="mb-6 pb-6 border-b border-gray-100">
                   <div className="flex items-center gap-2 mb-3">
                     <Search className="w-4 h-4 text-gray-600" />
@@ -245,13 +268,15 @@ export function ProductFilters({
                   </div>
                   <Input
                     type="text"
-                    value={filters.search}
-                    onChange={(e) =>
-                      handleFilterChange("search", e.target.value)
-                    }
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
                     placeholder="Search products..."
                     className="bg-gray-50 border-0 rounded-lg h-9"
                   />
+                  {/* ✅ NEW: Optional loading indicator */}
+                  {searchInput !== filters.search && searchInput !== "" && (
+                    <p className="text-xs text-gray-500 mt-1">Searching...</p>
+                  )}
                 </div>
 
                 {/* Category */}

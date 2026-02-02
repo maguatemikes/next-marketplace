@@ -1,556 +1,790 @@
-import {
-  ArrowRight,
-  Sparkles,
-  Palette,
-  Leaf,
-  Pencil,
-  Zap,
-  ShoppingBag,
-  CheckCircle,
-  Shield,
-  Building2,
-  Package,
-  Award,
-  Smartphone,
-  Store,
-  Crown,
-  Search,
-  ShoppingCart,
-  Heart,
-} from "lucide-react";
+// Next.js 15 Server Component - Etsy-style Homepage with Bento Grid
+import { Heart, ShoppingCart, Star } from "lucide-react";
 import Link from "next/link";
-import { ProductCard } from "@/components/product/ProductCard";
-import { MarketplaceFilters } from "@/components/h/MarketplaceFilters";
+import Image from "next/image";
+import BrandCarousel from "@/components/h/BrandCarousel";
 
-import { HeroSection } from "@/components/h/HeroSection";
+// TypeScript interfaces
+interface Product {
+  id: string | number;
+  name: string;
+  slug: string;
+  price: string | number;
+  image?: string;
+  externalImage?: string;
+  featured_img?: string;
+  raw_data?: {
+    imageUrl?: string;
+  };
+  rating?: number;
+  vendor?: string;
+}
 
-// Import mock data (or fetch from API)
+interface Category {
+  name: string;
+  slug: string;
+  count: number;
+}
 
-// Server-side data fetching
-async function getNewProducts() {
+interface Brand {
+  name: string;
+  slug: string;
+}
+
+// Server-side data fetching functions
+async function fetchFeaturedProducts(): Promise<Product[]> {
   try {
-    // Fetch from WooCommerce API
-    const response = await fetch(
-      "https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/products?page=1&per_page=8",
+    const res = await fetch(
+      "https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/products?per_page=30",
       {
-        next: { revalidate: 60 }, // Revalidate every 60 seconds
+        next: { revalidate: 300 }, // Revalidate every 5 minutes
+        headers: { Accept: "application/json" },
       },
     );
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch products");
+    if (!res.ok) {
+      console.error(`Products API failed: ${res.status}`);
+      return [];
     }
 
-    const data = await response.json();
-    return data.mapped || [];
+    const data = await res.json();
+    return data.products || [];
   } catch (error) {
-    console.error("❌ Failed to fetch WooCommerce products:", error);
-    // Return empty array on error
+    console.error("Error fetching products:", error);
     return [];
   }
 }
 
-// Icon mapping
-const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } =
-  {
-    Palette,
-    Leaf,
-    Pencil,
-    Zap,
-  };
+async function fetchCategories(): Promise<Category[]> {
+  try {
+    const res = await fetch(
+      "https://shoplocal.kinsta.cloud/wp-json/wp/v2/product_cat?per_page=100",
+      {
+        next: { revalidate: 3600 }, // Revalidate every hour
+        headers: { Accept: "application/json" },
+      },
+    );
+
+    if (!res.ok) {
+      console.error(`Categories API failed: ${res.status}`);
+      return [];
+    }
+
+    const data = await res.json();
+    return data.map((cat: any) => ({
+      name: cat.name,
+      slug: cat.slug,
+      count: cat.count || 0,
+    }));
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
+}
+
+async function fetchBrands(): Promise<Brand[]> {
+  try {
+    const res = await fetch(
+      "https://shoplocal.kinsta.cloud/wp-json/wp/v2/product_brand?per_page=100",
+      {
+        next: { revalidate: 3600 },
+        headers: { Accept: "application/json" },
+      },
+    );
+
+    if (!res.ok) {
+      console.error(`Brands API failed: ${res.status}`);
+      return [];
+    }
+
+    const data = await res.json();
+    return data.map((brand: any) => ({
+      name: brand.name,
+      slug: brand.slug,
+    }));
+  } catch (error) {
+    console.error("Error fetching brands:", error);
+    return [];
+  }
+}
+
+// Helper to get product image
+function getProductImage(product: Product): string {
+  return (
+    product?.image?.trim?.() ||
+    product?.externalImage?.trim?.() ||
+    product?.featured_img?.trim?.() ||
+    product?.raw_data?.imageUrl?.trim?.() ||
+    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop"
+  );
+}
 
 export default async function Homepage() {
-  // Fetch products on the server
-  const newProducts = await getNewProducts();
+  // Fetch all data in parallel on the server
+  const [products, categories, brands] = await Promise.all([
+    fetchFeaturedProducts(),
+    fetchCategories(),
+    fetchBrands(),
+  ]);
+
+  // Slice products for different sections
+  const bestProducts = products.slice(0, 10);
+  const editorsPicks = products.slice(10, 14);
+  const categoryShowcase = categories.slice(0, 6);
+  const trendingProducts = products.slice(14, 20);
+  const giftProducts = products.slice(20, 25);
+  const featuredBrands = brands.slice(0, 8);
 
   return (
-    <div className="min-h-screen">
-      {/* 1. Hero Section */}
-      <HeroSection />
-
-      {/* 2. Dual Positioning Strategy Section */}
-      <section className="py-20 bg-white">
+    <div className="min-h-screen bg-white">
+      {/* Bento Grid Hero Section */}
+      <section className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full mb-4">
-              <Zap className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-green-900">
-                Hybrid Hyperlocal & National Platform
-              </span>
-            </div>
-            <h2 className="text-4xl tracking-tight text-gray-900 mb-4">
-              One Catalog, Two Delivery Options
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Browse a unified catalog where products are sourced either from
-              neighborhood stores for instant 15–40 minute delivery, or from
-              national warehouses for 1–3 day shipping. You choose speed, we
-              deliver quality.
-            </p>
-          </div>
-
-          {/* Dual Value Props */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
-            {/* Shop National */}
-            <div className="relative bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-3xl p-8 overflow-hidden group hover:shadow-xl transition-all">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/20 rounded-full blur-3xl" />
-              <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-emerald-400/15 rounded-full blur-3xl" />
-              <div className="relative">
-                <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <ShoppingBag className="w-8 h-8 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Card 1: Who are we? - spans 1 column, 2 rows */}
+            <Link
+              href="/product/search"
+              className="md:row-span-2 bg-[#6B7280] rounded-3xl overflow-hidden cursor-pointer group relative h-[600px]"
+            >
+              <div className="absolute inset-0">
+                <Image
+                  src="https://images.unsplash.com/photo-1762553159827-7a5d2167b55d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwd2lyZWxlc3MlMjBlYXJidWRzJTIwcHJvZHVjdHxlbnwxfHx8fDE3Njk5NzA0MTV8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                  alt="Earbuds"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40"></div>
+              </div>
+              <div className="relative p-8 h-full flex flex-col justify-between">
+                <div>
+                  <h2 className="text-5xl text-white mb-4 leading-tight font-light">
+                    who
+                    <br />
+                    are
+                    <br />
+                    we?
+                  </h2>
                 </div>
-                <h3 className="text-2xl text-gray-900 mb-4">
-                  National Shipping (1–3 Days)
-                </h3>
-                <p className="text-gray-700 mb-6">
-                  Browse a wider selection from national brands and regional
-                  warehouses. Predictive AI optimizes inventory placement for
-                  faster fulfillment. Traditional logistics with reliable 1–3
-                  day delivery nationwide.
-                </p>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">
-                      <span className="font-semibold">1–3 day delivery</span>{" "}
-                      via traditional logistics
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">
-                      <span className="font-semibold">Wider selection</span>{" "}
-                      from national brands
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">
-                      <span className="font-semibold">AI-driven</span> regional
-                      inventory allocation
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">
-                      <span className="font-semibold">Competitive pricing</span>{" "}
-                      at scale
-                    </span>
-                  </li>
-                </ul>
-                <Link
-                  href="/products"
-                  className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-all flex items-center justify-center gap-2 group-hover:scale-105"
-                >
-                  Shop National Brands
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Shop Local */}
-            <div className="relative bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-3xl p-8 overflow-hidden group hover:shadow-xl transition-all">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl" />
-              <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-pink-400/15 rounded-full blur-3xl" />
-              <div className="relative">
-                <div className="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Store className="w-8 h-8 text-white" />
+                <div>
+                  <p className="text-white text-base mb-1">
+                    We&apos;re <span className="font-bold">young & wild</span>
+                  </p>
+                  <p className="text-white text-base mb-1">
+                    <span className="font-bold">explorers</span>
+                  </p>
+                  <p className="text-white/90 text-sm">out on a journey</p>
+                  <p className="text-white/90 text-sm">
+                    to turn on your true vibe.
+                  </p>
                 </div>
-                <h3 className="text-2xl text-gray-900 mb-4">
-                  Hyperlocal Instant (15–40 Min)
+              </div>
+            </Link>
+
+            {/* Card 2: Soundbar - spans 1 column */}
+            <Link
+              href="/product/search"
+              className="bg-[#8B9BA8] rounded-3xl overflow-hidden cursor-pointer group relative h-[292px]"
+            >
+              <div className="absolute inset-0">
+                <Image
+                  src="https://images.unsplash.com/photo-1710131459450-7c384b8be18f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBzb3VuZGJhciUyMGhvbWUlMjB0aGVhdGVyfGVufDF8fHx8MTc3MDA0MjQwOXww&ixlib=rb-4.1.0&q=80&w=1080"
+                  alt="Soundbar"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-black/30"></div>
+              </div>
+              <div className="relative p-8 h-full flex flex-col items-center justify-center text-center">
+                <h3 className="text-white text-xl mb-1">
+                  2.1 Channel Soundbar
                 </h3>
-                <p className="text-gray-700 mb-6">
-                  Get products instantly from neighborhood sellers within 1–5 km
-                  radius. Real-time tracking with geofencing, eco-friendly
-                  delivery via bicycle or EV, supporting your local economy
-                  while getting what you need fast.
-                </p>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">
-                      <span className="font-semibold">
-                        15–40 minute delivery
-                      </span>{" "}
-                      from local stores
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">
-                      <span className="font-semibold">Real-time tracking</span>{" "}
-                      with geofencing
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">
-                      <span className="font-semibold">Eco-friendly</span>{" "}
-                      delivery (bike/EV)
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">
-                      <span className="font-semibold">Support local</span> small
-                      businesses
-                    </span>
-                  </li>
-                </ul>
-                <Link
-                  href="/vendors"
-                  className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-all flex items-center justify-center gap-2 group-hover:scale-105"
-                >
-                  Find Local Sellers Near You
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
+                <p className="text-white/90 text-sm">with Wireless Subwoofer</p>
               </div>
-            </div>
-          </div>
+            </Link>
 
-          {/* Benefits Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-6 h-6 text-green-600" />
+            {/* Card 3: Headphones - spans 1 column */}
+            <Link
+              href="/product/search"
+              className="bg-[#8B7D7B] rounded-3xl overflow-hidden cursor-pointer group relative h-[292px]"
+            >
+              <div className="absolute inset-0">
+                <Image
+                  src="https://images.unsplash.com/photo-1762028892204-2ef68f7fcfd5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB3aXJlbGVzcyUyMGhlYWRwaG9uZXN8ZW58MXx8fHwxNzcwMDQyNDA3fDA&ixlib=rb-4.1.0&q=80&w=1080"
+                  alt="Headphones"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
               </div>
-              <h4 className="text-gray-900 mb-2">Real-Time Tracking</h4>
-              <p className="text-sm text-gray-600">
-                Live order visibility with geofencing for hyperlocal deliveries
-              </p>
-            </div>
+              <div className="relative p-8 h-full flex flex-col justify-between">
+                <div className="text-white/90 text-xs">
+                  <p>Every Beat Matters</p>
+                  <h3 className="text-2xl text-white mt-2 mb-1">
+                    RockerZ 660 PRO
+                  </h3>
+                  <p className="text-xs">60Hrs Audio | 40 Hours Playback</p>
+                </div>
+                <button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-2 rounded-full text-xs w-fit transition-colors font-medium">
+                  SHOP NOW
+                </button>
+              </div>
+            </Link>
 
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Leaf className="w-6 h-6 text-green-600" />
+            {/* Card 4: Bluetooth Speaker - spans 2 columns */}
+            <Link
+              href="/product/search"
+              className="lg:col-span-2 lg:col-start-2 bg-gradient-to-br from-[#FFF4E6] to-[#FFE8D6] rounded-3xl overflow-hidden cursor-pointer group h-[292px]"
+            >
+              <div className="p-6 h-full flex flex-col justify-between">
+                <div className="flex gap-2 mb-4 flex-wrap">
+                  <span className="px-3 py-1 bg-white/80 rounded-full text-xs text-gray-800">
+                    Dual EQ Modes
+                  </span>
+                  <span className="px-3 py-1 bg-white/80 rounded-full text-xs text-gray-800">
+                    Movies
+                  </span>
+                  <span className="px-3 py-1 bg-gray-900 text-white rounded-full text-xs">
+                    Music
+                  </span>
+                </div>
+                <div className="flex-1 flex items-center justify-center relative">
+                  <Image
+                    src="https://images.unsplash.com/photo-1561291349-8389bdc0b202?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwYmx1ZXRvb3RoJTIwc3BlYWtlciUyMHByb2R1Y3QlMjB3aGl0ZXxlbnwxfHx8fDE3NzAwNDI0OTF8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                    alt="Bluetooth Speaker"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 66vw"
+                    unoptimized
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <span className="px-4 py-1 bg-gray-900 text-white rounded-full text-xs">
+                    Bluetooth
+                  </span>
+                  <span className="px-4 py-1 bg-gray-900 text-white rounded-full text-xs">
+                    v5.3
+                  </span>
+                </div>
               </div>
-              <h4 className="text-gray-900 mb-2">Eco-Friendly</h4>
-              <p className="text-sm text-gray-600">
-                Shorter routes reduce carbon footprint—bicycle and EV delivery
-                options
-              </p>
-            </div>
-
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Building2 className="w-6 h-6 text-green-600" />
-              </div>
-              <h4 className="text-gray-900 mb-2">Unified Catalog</h4>
-              <p className="text-sm text-gray-600">
-                Browse one platform—choose your delivery speed and seller type
-              </p>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* 3. Promotional Banners */}
+      {/* Our Brand Partners Carousel */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl text-gray-900">Our Brand Partners</h2>
+            <Link
+              href="/product/search"
+              className="text-gray-900 underline hover:text-gray-700"
+            >
+              View all brands
+            </Link>
+          </div>
+          <BrandCarousel brands={featuredBrands} />
+        </div>
+      </section>
+
+      {/* Jump into featured interests */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl text-gray-900 mb-8">
+            Jump into featured interests
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {categoryShowcase.length > 0
+              ? categoryShowcase.map((category, idx) => (
+                  <Link
+                    key={category.slug}
+                    href={`/product/search?category=${category.slug}`}
+                    className="group"
+                  >
+                    <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-2 relative">
+                      <Image
+                        src={`https://images.unsplash.com/photo-${1515562141207 + idx}?w=300&h=300&fit=crop`}
+                        alt={category.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 16vw"
+                        unoptimized
+                      />
+                    </div>
+                    <p className="text-sm text-gray-900 text-center">
+                      {category.name}
+                    </p>
+                  </Link>
+                ))
+              : [
+                  {
+                    name: "Jewelry",
+                    image:
+                      "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&h=300&fit=crop",
+                  },
+                  {
+                    name: "Home Decor",
+                    image:
+                      "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=300&h=300&fit=crop",
+                  },
+                  {
+                    name: "Art & Prints",
+                    image:
+                      "https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=300&h=300&fit=crop",
+                  },
+                  {
+                    name: "Clothing",
+                    image:
+                      "https://images.unsplash.com/photo-1445205170230-053b83016050?w=300&h=300&fit=crop",
+                  },
+                  {
+                    name: "Accessories",
+                    image:
+                      "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?w=300&h=300&fit=crop",
+                  },
+                  {
+                    name: "Craft Supplies",
+                    image:
+                      "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=300&h=300&fit=crop",
+                  },
+                ].map((interest, idx) => (
+                  <Link key={idx} href="/product/search" className="group">
+                    <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-2 relative">
+                      <Image
+                        src={interest.image}
+                        alt={interest.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 16vw"
+                        unoptimized
+                      />
+                    </div>
+                    <p className="text-sm text-gray-900 text-center">
+                      {interest.name}
+                    </p>
+                  </Link>
+                ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Discover our best of since 2018 */}
       <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="relative bg-gradient-to-br from-green-500 to-green-600 rounded-3xl overflow-hidden shadow-lg">
-              <div className="p-8 relative z-10">
-                <div className="mb-3">
-                  <span className="text-white/90 text-sm tracking-wide uppercase">
-                    UP TO 20% OFF
-                  </span>
-                </div>
-                <h3 className="text-white text-2xl mb-6 leading-tight">
-                  Get The Latest
-                  <br />
-                  Products From
-                  <br />
-                  Top Sellers
-                </h3>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl text-gray-900 mb-8">
+            Discover our best of since 2018
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {bestProducts.length > 0 ? (
+              bestProducts.map((product: any) => (
                 <Link
-                  href="/products"
-                  className="bg-white text-gray-900 px-6 py-2.5 rounded-lg hover:bg-gray-100 transition-colors inline-block"
+                  key={product.id}
+                  href={`/product/${product.slug}`}
+                  className="group"
                 >
-                  SEE ALL
+                  <div className="aspect-square rounded-xl overflow-hidden bg-white mb-3 relative">
+                    <Image
+                      src={getProductImage(product)}
+                      alt={product.name || "Product"}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                      unoptimized
+                    />
+                    <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100">
+                      <Heart className="w-4 h-4 text-gray-700" />
+                    </button>
+                  </div>
+                  <h3 className="text-sm text-gray-900 mb-1 line-clamp-2">
+                    {product.name}
+                  </h3>
+                  <div className="flex items-center gap-1 mb-1">
+                    {product.rating && (
+                      <>
+                        <Star className="w-3 h-3 fill-gray-900 text-gray-900" />
+                        <span className="text-xs text-gray-700">
+                          {product.rating}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <p className="text-sm font-medium text-gray-900">
+                    ${product.price}
+                  </p>
                 </Link>
-              </div>
-              <Package className="absolute bottom-4 right-4 w-32 h-32 text-white/20" />
-            </div>
-
-            <div className="relative bg-gradient-to-br from-green-600 to-green-700 rounded-3xl overflow-hidden shadow-lg">
-              <div className="p-8 relative z-10">
-                <div className="mb-3">
-                  <span className="text-white/90 text-sm tracking-wide uppercase">
-                    TRUSTED SELLERS
-                  </span>
-                </div>
-                <h3 className="text-white text-2xl mb-6 leading-tight">
-                  Quality
-                  <br />
-                  Affordable
-                  <br />
-                  Products
-                </h3>
-                <Link
-                  href="/vendors"
-                  className="bg-white text-gray-900 px-6 py-2.5 rounded-lg hover:bg-gray-100 transition-colors inline-block"
-                >
-                  SEE ALL
-                </Link>
-              </div>
-              <Award className="absolute bottom-4 right-4 w-32 h-32 text-white/20" />
-            </div>
-
-            <div className="relative bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl overflow-hidden shadow-lg">
-              <div className="p-8 relative z-10">
-                <div className="mb-3">
-                  <span className="text-white/90 text-sm tracking-wide uppercase">
-                    COMING SOON!
-                  </span>
-                </div>
-                <h3 className="text-white text-2xl mb-6 leading-tight">
-                  ShopLocal
-                  <br />
-                  Mobile App
-                </h3>
-                <Link
-                  href="/about"
-                  className="bg-white text-gray-900 px-6 py-2.5 rounded-lg hover:bg-gray-100 transition-colors inline-block"
-                >
-                  SEE ALL
-                </Link>
-              </div>
-              <Smartphone className="absolute bottom-4 right-4 w-32 h-32 text-white/20" />
-            </div>
+              ))
+            ) : (
+              <p className="col-span-full text-center text-gray-500">
+                No products available
+              </p>
+            )}
           </div>
         </div>
       </section>
 
-      {/* 4. Featured Exclusive Brands */}
-      <section className="py-24 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full mb-4">
-              <Sparkles className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-green-900">
-                Exclusive Partnerships
-              </span>
-            </div>
-            <h2 className="text-4xl tracking-tight text-gray-900 mb-3">
-              Premium Brands You Trust
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Shop exclusive collections from top brands partnered with
-              ShopLocal for quality you can count on
-            </p>
+      {/* Editor's Picks */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl text-gray-900">Editor&apos;s Picks</h2>
+            <Link
+              href="/product/search"
+              className="text-gray-900 underline hover:text-gray-700"
+            >
+              See more
+            </Link>
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {editorsPicks.length > 0 ? (
+              editorsPicks.map((product: any) => (
+                <Link
+                  key={product.id}
+                  href={`/product/${product.slug}`}
+                  className="group"
+                >
+                  <div className="aspect-square rounded-xl overflow-hidden bg-white mb-3 relative shadow-sm">
+                    <Image
+                      src={getProductImage(product)}
+                      alt={product.name || "Product"}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      unoptimized
+                    />
+                    <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100">
+                      <Heart className="w-4 h-4 text-gray-700" />
+                    </button>
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-gray-900 text-white text-xs rounded-md">
+                      Editor&apos;s Pick
+                    </div>
+                  </div>
+                  <h3 className="text-sm text-gray-900 mb-1 line-clamp-2 font-medium">
+                    {product.name}
+                  </h3>
+                  <p className="text-xs text-gray-600 mb-2">
+                    {product.vendor || "ShopLocal"}
+                  </p>
+                  <div className="flex items-center gap-1 mb-2">
+                    {product.rating && (
+                      <>
+                        <Star className="w-3 h-3 fill-gray-900 text-gray-900" />
+                        <span className="text-xs text-gray-700">
+                          {product.rating}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <p className="text-base font-medium text-gray-900">
+                    ${product.price}
+                  </p>
+                </Link>
+              ))
+            ) : (
+              <p className="col-span-full text-center text-gray-500">
+                No products available
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      {/* Shop by Category - Large Feature */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl text-gray-900 mb-8">Shop by Category</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {categories.slice(0, 6).length > 0
+              ? categories.slice(0, 6).map((category, idx) => (
+                  <Link
+                    key={category.slug}
+                    href={`/product/search?category=${category.slug}`}
+                    className="group relative rounded-2xl overflow-hidden h-64"
+                  >
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={`https://images.unsplash.com/photo-${1599643478518 + idx * 1000}?w=600&h=400&fit=crop`}
+                        alt={category.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        unoptimized
+                      />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                    <div className="absolute bottom-6 left-6 right-6 text-white">
+                      <h3 className="text-xl font-medium mb-1">
+                        {category.name}
+                      </h3>
+                      <p className="text-sm text-white/90">
+                        {category.count} items
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              : [
+                  { name: "Jewelry & Accessories", count: "2,345 items" },
+                  { name: "Home & Living", count: "5,678 items" },
+                  { name: "Art & Collectibles", count: "1,234 items" },
+                  { name: "Clothing & Shoes", count: "3,456 items" },
+                  { name: "Craft Supplies", count: "4,321 items" },
+                  { name: "Electronics & Gadgets", count: "1,987 items" },
+                ].map((category, idx) => (
+                  <Link
+                    key={idx}
+                    href="/product/search"
+                    className="group relative rounded-2xl overflow-hidden h-64"
+                  >
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={`https://images.unsplash.com/photo-${1599643478518 + idx * 1000}?w=600&h=400&fit=crop`}
+                        alt={category.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        unoptimized
+                      />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                    <div className="absolute bottom-6 left-6 right-6 text-white">
+                      <h3 className="text-xl font-medium mb-1">
+                        {category.name}
+                      </h3>
+                      <p className="text-sm text-white/90">{category.count}</p>
+                    </div>
+                  </Link>
+                ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trending Now */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl text-gray-900">Trending Now</h2>
+            <Link
+              href="/product/search"
+              className="text-gray-900 underline hover:text-gray-700"
+            >
+              Explore all
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {trendingProducts.length > 0 ? (
+              trendingProducts.map((product: any) => (
+                <Link
+                  key={product.id}
+                  href={`/product/${product.slug}`}
+                  className="group"
+                >
+                  <div className="aspect-square rounded-xl overflow-hidden bg-white mb-3 relative">
+                    <Image
+                      src={getProductImage(product)}
+                      alt={product.name || "Product"}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                      unoptimized
+                    />
+                    <div className="absolute top-2 left-2 px-2 py-1 bg-white text-gray-900 text-xs rounded-md font-medium">
+                      Trending
+                    </div>
+                    <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100">
+                      <Heart className="w-4 h-4 text-gray-700" />
+                    </button>
+                  </div>
+                  <h3 className="text-sm text-gray-900 mb-1 line-clamp-2">
+                    {product.name}
+                  </h3>
+                  <p className="text-sm font-medium text-gray-900">
+                    ${product.price}
+                  </p>
+                </Link>
+              ))
+            ) : (
+              <p className="col-span-full text-center text-gray-500">
+                No trending products
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Gift Ideas */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl text-gray-900 mb-8">Gift Ideas</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
               {
-                icon: Leaf,
-                label: "Eco-Friendly",
-                description: "Sustainable Products",
-                stats: "EcoWear & More",
-                color: "from-green-500 to-emerald-500",
+                title: "For Her",
+                subtitle: "Thoughtful gifts she'll love",
+                image:
+                  "https://images.unsplash.com/photo-1549062572-544a64fb0c56?w=400&h=500&fit=crop",
               },
               {
-                icon: Palette,
-                label: "Handmade Artisan",
-                description: "Crafted with Care",
-                stats: "Artisan Collection",
-                color: "from-purple-500 to-pink-500",
+                title: "For Him",
+                subtitle: "Gifts that make an impression",
+                image:
+                  "https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=400&h=500&fit=crop",
               },
               {
-                icon: Pencil,
-                label: "Custom & Personalized",
-                description: "Your Design, Our Craft",
-                stats: "PrintPro Partners",
-                color: "from-teal-500 to-cyan-500",
+                title: "For Kids",
+                subtitle: "Fun and creative finds",
+                image:
+                  "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&h=500&fit=crop",
               },
               {
-                icon: Sparkles,
-                label: "Premium Brands",
-                description: "Tech, Beauty & More",
-                stats: "TechLife & NaturalGlow",
-                color: "from-amber-500 to-orange-500",
+                title: "For Home",
+                subtitle: "Make any space special",
+                image:
+                  "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400&h=500&fit=crop",
               },
-            ].map((brand, index) => {
-              const Icon = brand.icon;
-              return (
-                <div
-                  key={index}
-                  className="group relative bg-white rounded-2xl p-6 hover:shadow-2xl cursor-pointer border border-gray-200 hover:border-transparent overflow-hidden transition-all"
-                >
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${brand.color} opacity-0 group-hover:opacity-5 transition-opacity`}
-                  />
-                  <div className="relative mb-4">
-                    <div
-                      className={`w-16 h-16 rounded-xl bg-gradient-to-br ${brand.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
-                    >
-                      <Icon className="w-8 h-8 text-white" />
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <h3 className="text-gray-900 mb-1">{brand.label}</h3>
-                    <p className="text-sm text-gray-500 mb-3">
-                      {brand.description}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <div className="h-1 w-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full" />
-                      <span className="text-xs text-gray-600">
-                        {brand.stats}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ArrowRight className="w-5 h-5 text-green-500" />
-                  </div>
+            ].map((gift, idx) => (
+              <Link
+                key={idx}
+                href="/product/search"
+                className="group relative rounded-2xl overflow-hidden h-80"
+              >
+                <Image
+                  src={gift.image}
+                  alt={gift.title}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                <div className="absolute bottom-6 left-6 right-6 text-white">
+                  <h3 className="text-xl font-medium mb-1">{gift.title}</h3>
+                  <p className="text-sm text-white/90">{gift.subtitle}</p>
                 </div>
-              );
-            })}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* More to explore */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl text-gray-900 mb-8">More to explore</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {giftProducts.length > 0 ? (
+              giftProducts.map((product: any) => (
+                <Link
+                  key={product.id}
+                  href={`/product/${product.slug}`}
+                  className="group"
+                >
+                  <div className="aspect-square rounded-xl overflow-hidden bg-white mb-3 relative shadow-sm">
+                    <Image
+                      src={getProductImage(product)}
+                      alt={product.name || "Product"}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                      unoptimized
+                    />
+                    <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100">
+                      <ShoppingCart className="w-4 h-4 text-gray-700" />
+                    </button>
+                  </div>
+                  <h3 className="text-sm text-gray-900 mb-1 line-clamp-2">
+                    {product.name}
+                  </h3>
+                  <div className="flex items-center gap-1 mb-1">
+                    {product.rating && (
+                      <>
+                        <Star className="w-3 h-3 fill-gray-900 text-gray-900" />
+                        <span className="text-xs text-gray-700">
+                          {product.rating}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <p className="text-sm font-medium text-gray-900">
+                    ${product.price}
+                  </p>
+                </Link>
+              ))
+            ) : (
+              <p className="col-span-full text-center text-gray-500">
+                No products available
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* What is ShopLocal? */}
+      <section className="py-20 bg-[#FFF8E7]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl text-gray-900 mb-2">What is ShopLocal?</h2>
+            <p className="text-sm text-gray-700">
+              <Link href="/about" className="underline hover:text-gray-900">
+                Read our wonderfully weird story
+              </Link>
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div className="text-left">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">
+                A community doing good
+              </h3>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                ShopLocal is a global online marketplace, where people come
+                together to make, sell, buy, and collect unique items.
+                We&apos;re also a community pushing for positive change for
+                small businesses, people, and the planet.{" "}
+                <Link href="/about" className="underline hover:text-gray-900">
+                  Here are some of the ways we&apos;re making a positive impact,
+                  together.
+                </Link>
+              </p>
+            </div>
+
+            <div className="text-left">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">
+                Support independent creators
+              </h3>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                There&apos;s no ShopLocal warehouse – just millions of people
+                selling the things they love. We make the whole process easy,
+                helping you connect directly with makers to find something
+                extraordinary.
+              </p>
+            </div>
+
+            <div className="text-left">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">
+                Peace of mind
+              </h3>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Your privacy is the highest priority of our dedicated team. And
+                if you ever need assistance, we are always ready to step in for
+                support.
+              </p>
+            </div>
           </div>
 
           <div className="text-center">
-            <Link
-              href="/products"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-all group shadow-lg hover:shadow-xl"
-            >
-              Explore All Brands
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. Shop Local Marketplace */}
-
-      {/* 6. Top Categories */}
-      <section className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl tracking-tight text-gray-900 mb-3">
-              Shop by Category
-            </h2>
-            <p className="text-gray-600">Find exactly what youre looking for</p>
-          </div>
-
-          {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {categories.map((category) => {
-              const Icon = iconMap[category.iconName];
-              return (
-                <Link
-                  key={category.name}
-                  href="/products"
-                  className="group bg-white rounded-2xl p-8 text-center hover:shadow-lg hover:shadow-gray-100/50 border border-gray-100 hover:border-gray-200 transition-all"
-                >
-                  <div className="flex justify-center mb-4">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      {Icon && <Icon className="w-8 h-8 text-green-600" />}
-                    </div>
-                  </div>
-                  <h3 className="text-gray-900 group-hover:text-green-500 transition-colors">
-                    {category.name}
-                  </h3>
-                </Link>
-              );
-            })}
-          </div> */}
-        </div>
-      </section>
-
-      {/* 7. Marketplace & Community */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl tracking-tight text-gray-900 mb-3">
-              Marketplace & Community
-            </h2>
-            <p className="text-gray-600">
-              Explore our diverse collection of products and services
+            <p className="text-base text-gray-900 mb-6">
+              Have a question? Well, we&apos;ve got some answers.
             </p>
-          </div>
-
-          <div className="text-center mt-12">
             <Link
-              href="/products"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors group shadow-lg"
+              href="/help"
+              className="inline-block px-6 py-3 bg-white border-2 border-gray-900 text-gray-900 rounded-full hover:bg-gray-900 hover:text-white transition-colors font-medium"
             >
-              View All Products
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 8. New Arrivals */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-12">
-            <div>
-              <h2 className="text-4xl tracking-tight text-gray-900 mb-3">
-                New Arrivals
-              </h2>
-              <p className="text-gray-600">
-                Latest products from our marketplace sellers
-              </p>
-            </div>
-            <Link
-              href="/products"
-              className="hidden md:flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
-            >
-              View all
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-
-          {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {newProducts.length > 0 ? (
-              newProducts.map((product: any) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onViewProduct={(slug: string) => `/product/${slug}`}
-                  onViewVendor={(slug: string) => `/vendor/${slug}`}
-                />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">
-                  No products available at the moment
-                </p>
-              </div>
-            )}
-          </div> */}
-        </div>
-      </section>
-
-      {/* Remaining sections... */}
-      <section className="py-24 bg-gradient-to-br from-green-50 to-emerald-50/50">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-2xl mb-6">
-            <ArrowRight className="w-8 h-8 text-white" />
-          </div>
-
-          <h2 className="text-4xl tracking-tight text-gray-900 mb-4">
-            Are You a Local Seller or Brand?
-          </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Get visibility alongside premium brands and reach customers who
-            value quality and community. Featured placements, local badges, and
-            more.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/sell"
-              className="group px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-all inline-flex items-center justify-center gap-2"
-            >
-              Start Selling Today
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/about"
-              className="px-8 py-4 bg-white hover:bg-gray-50 text-gray-900 rounded-xl border-2 border-gray-200 transition-all inline-block text-center"
-            >
-              Learn More
+              Go to Help Center
             </Link>
           </div>
         </div>

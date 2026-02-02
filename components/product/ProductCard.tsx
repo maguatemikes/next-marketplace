@@ -62,8 +62,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <Image
               src={imageUrl}
               alt={product.name}
-              width={400}
-              height={400}
+              fill
               className="w-full h-full object-cover"
               unoptimized // allows external URLs
             />
