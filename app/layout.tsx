@@ -68,8 +68,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={helveticaNeue.variable}>
-      <body className={`${helveticaNeue.className} antialiased`}>
+    <html lang="en" className={`${helveticaNeue.variable}`}>
+      <body>
         <Navigation />
         {children}
         <Footer />
