@@ -243,7 +243,7 @@ export function ProductFilters({
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar Filters */}
-            <aside className="lg:w-64 flex-shrink-0">
+            <aside className="lg:w-64 shrink-0">
               <div className="bg-white rounded-2xl p-6 border border-gray-100 sticky top-40">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
