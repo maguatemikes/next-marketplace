@@ -724,7 +724,7 @@ export default async function Homepage() {
       </section>
 
       {/* What is ShopLocal? */}
-      <section className="py-20 bg-[#FFF8E7]">
+      <section className="py-20 bg-[#d2ffcc]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-4xl text-gray-900 mb-2">What is ShopLocal?</h2>

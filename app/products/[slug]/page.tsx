@@ -54,7 +54,7 @@ interface Product {
     imageUrl?: string;
   };
   vendor?: string;
-  verndorSlug: string;
+  vendorSlug: string;
   category?: string;
   rating?: number;
   reviewCount?: number;
@@ -192,7 +192,7 @@ export default async function ProductDetails({
             <span className="text-gray-600">Sold by</span>
             {product.vendor ? (
               <Link
-                href={`/vendor/${product.verndorSlug}`}
+                href={`/store-front/${product.vendorSlug}`}
                 className="text-green-500 hover:text-green-600"
               >
                 {product.vendor}

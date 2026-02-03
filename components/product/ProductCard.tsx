@@ -143,14 +143,9 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <div className="flex items-center justify-between mt-auto">
           <div className="flex flex-col gap-1">
-            {/* <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <span className="text-lg text-gray-900">${product.price}</span>
-              {hasDiscount && (
-                <span className="text-sm text-gray-400 line-through">
-                  ${product.originalPrice}
-                </span>
-              )}
-            </div> */}
+            </div>
           </div>
           <span className="text-xs text-gray-500 px-2 py-1 bg-gray-50 rounded">
             {product.category || "Uncategorized"}
