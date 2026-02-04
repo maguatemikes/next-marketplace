@@ -2,7 +2,7 @@
 import { Heart, ShoppingCart, Star } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import BrandCarousel from "@/components/h/BrandCarousel";
+import BrandCarousel from "@/components/home-comp/BrandCarousel";
 
 // TypeScript interfaces
 interface Product {
@@ -432,7 +432,7 @@ export default async function Homepage() {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl text-gray-900">Editor&apos;s Picks</h2>
+            <h2 className="text-2xl text-gray-900">Top Picks</h2>
             <Link
               href="/product/search"
               className="text-gray-900 underline hover:text-gray-700"

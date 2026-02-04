@@ -206,25 +206,27 @@ export default async function ProductDetails({
           <h1 className="text-4xl text-gray-900 mb-4">{product.name}</h1>
 
           {/* Rating */}
-          {product.rating && (
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-5 h-5 ${
-                      i < Math.floor(product.rating!)
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-5 h-5 ${
+                    product.rating
+                      ? i < Math.floor(product.rating)
                         ? "fill-amber-400 text-amber-400"
                         : "fill-none text-gray-300"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-gray-600 text-sm">
-                {product.rating} ({product.reviewCount || 0} reviews)
-              </span>
+                      : "fill-none text-gray-300" // Skeleton stars when no rating
+                  }`}
+                />
+              ))}
             </div>
-          )}
+            {product.rating && (
+              <span className="text-gray-600 text-sm">
+                {product.rating} ({product.reviewCount || 5} reviews)
+              </span>
+            )}
+          </div>
 
           {/* Price */}
           <div className="mb-8">
@@ -280,13 +282,16 @@ export default async function ProductDetails({
 
           {/* Accordion */}
           <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="features">
-              <AccordionTrigger className="text-gray-900 hover:text-gray-900 flex items-center gap-2">
+            <AccordionItem
+              value="features"
+              className="border-b border-gray-200"
+            >
+              <AccordionTrigger className="flex items-center gap-2 text-gray-900 hover:text-gray-900">
                 <Package className="w-5 h-5 text-green-500" />
-                <span>Product Features</span>
+                <span className="flex-1 text-left">Product Features</span>
               </AccordionTrigger>
-              <AccordionContent>
-                <ul className="space-y-2 text-gray-600">
+              <AccordionContent className="mt-2 text-gray-600">
+                <ul className="space-y-2">
                   <li>✓ High-quality materials</li>
                   <li>✓ Lightweight and durable</li>
                   <li>✓ Fast shipping</li>
@@ -295,17 +300,18 @@ export default async function ProductDetails({
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="shipping">
-              <AccordionTrigger className="text-gray-900 hover:text-gray-900 flex items-center gap-2">
+            <AccordionItem
+              value="shipping"
+              className="border-b border-gray-200"
+            >
+              <AccordionTrigger className="flex items-center gap-2 text-gray-900 hover:text-gray-900">
                 <Truck className="w-5 h-5 text-green-500" />
-                <span>Shipping & Returns</span>
+                <span className="flex-1 text-left">Shipping & Returns</span>
               </AccordionTrigger>
-              <AccordionContent>
-                <div className="space-y-2 text-gray-600">
-                  <p>Free shipping on orders over $50</p>
-                  <p>30-day return policy</p>
-                  <p>Ships within 2-3 business days</p>
-                </div>
+              <AccordionContent className="mt-2 text-gray-600">
+                <p>Free shipping on orders over $50</p>
+                <p>30-day return policy</p>
+                <p>Ships within 2-3 business days</p>
               </AccordionContent>
             </AccordionItem>
           </Accordion>

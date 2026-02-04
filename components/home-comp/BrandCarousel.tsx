@@ -19,50 +19,31 @@ export default function BrandCarousel({ brands }: BrandCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(5);
 
-  // Default brand images
-  const brandImages: { [key: string]: string } = {
-    Nike: "https://images.unsplash.com/photo-1633432871237-b1841c33a8de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxuaWtlJTIwbG9nbyUyMHdoaXRlJTIwYmFja2dyb3VuZHxlbnwxfHx8fDE3NzAwMTU2MTl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    "Under Armour":
-      "https://images.unsplash.com/flagged/photo-1558687887-32e936b96387?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bmRlciUyMGFybW91ciUyMGxvZ298ZW58MXx8fHwxNzcwMDQzMDk4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    Logitech:
-      "https://images.unsplash.com/photo-1629362050323-b40efaa4c217?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsb2dpdGVjaCUyMGxvZ28lMjBicmFuZHxlbnwxfHx8fDE3NzAwNDMwOTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    Dyson:
-      "https://images.unsplash.com/photo-1708529589690-00e2bbb7f327?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkeXNvbiUyMGJyYW5kJTIwbG9nb3xlbnwxfHx8fDE3NzAwNDMwOTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    Adidas:
-      "https://images.unsplash.com/photo-1555274175-6cbf6f3b137b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZGlkYXMlMjBsb2dvJTIwYnJhbmR8ZW58MXx8fHwxNzcwMDEzNTk5fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    Samsung:
-      "https://images.unsplash.com/photo-1661347998423-b15d37d6f61e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzYW1zdW5nJTIwbG9nbyUyMGJyYW5kfGVufDF8fHx8MTc2OTk3OTQwOHww&ixlib=rb-4.1.0&q=80&w=1080",
-    Apple:
-      "https://images.unsplash.com/photo-1703756292090-f086a84d1cfd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcHBsZSUyMGxvZ28lMjBicmFuZHxlbnwxfHx8fDE3NzAwMTM1OTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    Sony: "https://images.unsplash.com/photo-1644105637327-00f653c887ad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzb255JTIwbG9nbyUyMGJyYW5kfGVufDF8fHx8MTc2OTk3OTQwNnww&ixlib=rb-4.1.0&q=80&w=1080",
+  // Brand images keyed by SLUG (stable identifiers)
+  const brandImages: Record<string, string> = {
+    nike: "https://shoplocal.kinsta.cloud/wp-content/uploads/2026/01/nike.png",
+    logitech:
+      "https://shoplocal.kinsta.cloud/wp-content/uploads/2026/01/logitech.png",
+    dyson:
+      "https://shoplocal.kinsta.cloud/wp-content/uploads/2026/01/dyson.webp",
+    lee: "https://shoplocal.kinsta.cloud/wp-content/uploads/2026/02/lee-logo-black-and-white.png",
+    "under-armor":
+      "https://shoplocal.kinsta.cloud/wp-content/uploads/2026/01/underarmor.png",
+    wfe: "https://shoplocal.kinsta.cloud/wp-content/uploads/2026/01/wfe.png",
   };
 
-  // Fallback brands if API fails
-  const fallbackBrands: Brand[] = [
-    { name: "Nike", slug: "nike" },
-    { name: "Under Armour", slug: "under-armour" },
-    { name: "Logitech", slug: "logitech" },
-    { name: "Dyson", slug: "dyson" },
-    { name: "Adidas", slug: "adidas" },
-    { name: "Samsung", slug: "samsung" },
-    { name: "Apple", slug: "apple" },
-    { name: "Sony", slug: "sony" },
-  ];
+  const PLACEHOLDER =
+    "https://shoplocal.kinsta.cloud/wp-content/uploads/2026/01/brand-placeholder.png";
 
-  const displayBrands = brands.length > 0 ? brands : fallbackBrands;
+  const displayBrands = brands.length > 0 ? brands : [];
 
-  // Handle responsive items per view
+  // Responsive items per view
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 640) {
-        setItemsPerView(2);
-      } else if (window.innerWidth < 768) {
-        setItemsPerView(3);
-      } else if (window.innerWidth < 1024) {
-        setItemsPerView(4);
-      } else {
-        setItemsPerView(5);
-      }
+      if (window.innerWidth < 640) setItemsPerView(2);
+      else if (window.innerWidth < 768) setItemsPerView(3);
+      else if (window.innerWidth < 1024) setItemsPerView(4);
+      else setItemsPerView(5);
     };
 
     handleResize();
@@ -80,8 +61,9 @@ export default function BrandCarousel({ brands }: BrandCarouselProps) {
     setCurrentIndex((prev) => Math.min(maxIndex, prev + 1));
   };
 
+  // ✅ Correct image resolver
   const getBrandImage = (brand: Brand) => {
-    return brand.image || brandImages[brand.name] || brandImages["Nike"];
+    return brand.image || brandImages[brand.slug] || PLACEHOLDER;
   };
 
   return (

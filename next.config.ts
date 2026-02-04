@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "shoplocal.kinsta.cloud",
         port: "",
-        pathname: "/images/**",
+        pathname: "/**", // Allow all paths (wp-content, images, etc.)
       },
       {
         protocol: "https",
@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "resource.logitech.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
         port: "",
         pathname: "/**",
       },

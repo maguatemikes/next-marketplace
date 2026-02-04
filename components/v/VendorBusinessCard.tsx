@@ -205,7 +205,7 @@ export function VendorBusinessCard({ vendor }: VendorBusinessCardProps) {
                 variant="outline"
                 className="rounded-md h-10 w-10 p-0 border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition-all"
               >
-                <Link href={`/vendor/${vendor.slug}`}>
+                <Link href={`/store-front/${vendor.slug}`}>
                   <Store className="w-4 h-4" />
                 </Link>
               </Button>
