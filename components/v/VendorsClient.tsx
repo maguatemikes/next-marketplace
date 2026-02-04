@@ -54,7 +54,11 @@ interface Place {
   longitude?: string;
   slug?: string;
   rating?: number;
-  featured_image?: { src?: string; thumbnail?: string; sizes?: any };
+  featured_image?: {
+    src?: string;
+    thumbnail?: string;
+    sizes?: any;
+  };
   images?: Array<{ src?: string; thumbnail?: string }>;
   gd_custom_ratings?: number;
   [key: string]: any;
@@ -263,7 +267,7 @@ export function VendorsClient({
   // ⭐ Reset loading state when page actually changes
   useEffect(() => {
     setIsNavigating(false);
-  }, [currentPage]);
+  }, [currentPage, initialPlaces]);
 
   // ⭐ Sync category filter from URL (only when URL category changes)
   useEffect(() => {
@@ -291,8 +295,8 @@ export function VendorsClient({
       params.set("category", value);
     }
 
-    // ⭐ Navigate - page is dynamic so it will auto-refresh
     router.push(`/vendors?${params.toString()}`);
+    router.refresh();
   };
 
   // ⭐ Handle page change (SERVER-SIDE navigation)
@@ -308,8 +312,8 @@ export function VendorsClient({
         params.set("category", urlCategory);
       }
 
-      // ⭐ Navigate - page is dynamic so it will auto-refresh
       router.push(`/vendors?${params.toString()}`);
+      router.refresh();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -323,8 +327,9 @@ export function VendorsClient({
     setRatingFilter([0]);
     setSelectedVendorId(null);
     setIsNavigating(true);
-    // ⭐ Navigate - page is dynamic so it will auto-refresh
+
     router.push("/vendors?page=1");
+    router.refresh();
   };
 
   // Filter and transform places to vendors

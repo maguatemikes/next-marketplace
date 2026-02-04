@@ -262,7 +262,7 @@ async function fetchLocations(): Promise<{
 // ⭐ Fetch places with PAGINATION from your custom endpoint
 async function fetchPaginatedPlaces(
   page: number = 1,
-  perPage: number = 9,
+  perPage: number = 12,
   categoryFilter?: string, // ⭐ NEW: Category filter parameter
 ): Promise<PaginatedPlacesResponse> {
   try {
