@@ -29,7 +29,7 @@ interface Vendor {
   rating: number;
   location: string;
   distance?: number;
-  claimed: number;
+  claimed: number | string;
 }
 
 interface VendorBusinessCardProps {
@@ -45,7 +45,7 @@ function formatDistance(distance: number): string {
 }
 
 export function VendorBusinessCard({ vendor }: VendorBusinessCardProps) {
-  const isClaimed = vendor.claimed === 1;
+  const isClaimed = vendor.claimed === 1 || vendor.claimed === "1";
 
   // Generate stable review count based on vendor ID
   const reviewCount = Math.floor(((parseInt(vendor.id) * 7) % 150) + 10);
@@ -105,7 +105,7 @@ export function VendorBusinessCard({ vendor }: VendorBusinessCardProps) {
         <div className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-100">
           <div className="flex items-center gap-0.5">
             {[...Array(5)].map((_, i) => {
-              const rating = Number(vendor.rating) || 0;
+              const rating = Number(vendor.rating) || 4.5;
               const isFullStar = i < Math.floor(rating);
               const isHalfStar = i === Math.floor(rating) && rating % 1 >= 0.5;
 
@@ -191,7 +191,7 @@ export function VendorBusinessCard({ vendor }: VendorBusinessCardProps) {
         <div className="flex gap-3">
           <Button
             asChild
-            className="flex-1 bg-green-600 hover:bg-green-700 text-white rounded-md h-10 text-sm shadow-sm hover:shadow-md transition-all"
+            className="flex-1 bg-[#F57C00] hover:bg-[#E67000] text-white rounded-md h-10 text-sm shadow-sm hover:shadow-md transition-all"
           >
             <Link href={`/vendors/${vendor.id}`}>
               <ExternalLink className="w-4 h-4 mr-2" />
