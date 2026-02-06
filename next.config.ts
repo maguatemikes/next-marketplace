@@ -27,6 +27,24 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "dyson-h.assetsadobe2.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "assets.designerbrands.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "nb.scene7.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

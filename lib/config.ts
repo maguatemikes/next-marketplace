@@ -11,7 +11,7 @@ export const config = {
     wordpress: "https://shoplocal.kinsta.cloud/wp-json/wp/v2",
     dokan: "https://shoplocal.kinsta.cloud/wp-json/dokan/v1",
     jwtAuth: "https://shoplocal.kinsta.cloud/wp-json/jwt-auth/v1",
-    customApi: "https://shoplocal.kinsta.cloud/wp-json/custom-api-test/v1",
+    customApi: "https://shoplocal.kinsta.cloud/wp-json/custom-api-v3/v1",
     woocommerce: "https://shoplocal.kinsta.cloud/wp-json/wc/v3", // WooCommerce REST API
   },
 

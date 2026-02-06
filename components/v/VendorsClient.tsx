@@ -40,7 +40,7 @@ export interface Vendor {
 
 interface Place {
   id: number;
-  claimed: number;
+  claimed?: number;
   title: string | { raw: string; rendered: string };
   content: string | { raw: string; rendered: string };
   default_category?: number;
@@ -241,21 +241,20 @@ export function VendorsClient({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // ⭐ Extract URL params once to avoid cascading
+  // Extract URL params once to avoid cascading
   const urlCategory = searchParams.get("category") || "all";
+  const urlLocation = searchParams.get("location") || "all";
   const urlPage = searchParams.get("page") || "1";
 
   // Filter state
+  const [cityLabel, setCityLabel] = useState(urlLocation);
   const [searchQuery, setSearchQuery] = useState("");
-  const [regionFilter, setRegionFilter] = useState("all");
-  const [cityFilter, setCityFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState(urlCategory);
+  const [cityFilter, setCityFilter] = useState(urlLocation);
+  const [categoryLabel, setCategoryLabel] = useState(urlCategory);
   const [ratingFilter, setRatingFilter] = useState<number[]>([0]);
   const [sortBy, setSortBy] = useState("featured");
   const [showMap, setShowMap] = useState(false);
   const [selectedVendorId, setSelectedVendorId] = useState<string | null>(null);
-
-  // ⭐ Loading state for pagination
   const [isNavigating, setIsNavigating] = useState(false);
 
   // User location
@@ -264,66 +263,75 @@ export function VendorsClient({
     lon: number;
   } | null>(null);
 
-  // ⭐ Reset loading state when page actually changes
+  // Reset loading state when page changes
   useEffect(() => {
     setIsNavigating(false);
   }, [currentPage, initialPlaces]);
 
-  // ⭐ Sync category filter from URL (only when URL category changes)
+  // Sync city filter from URL
   useEffect(() => {
-    if (categoryFilter !== urlCategory) {
-      setCategoryFilter(urlCategory);
+    if (cityFilter !== urlLocation) {
+      setCityFilter(urlLocation);
     }
-  }, [urlCategory]);
+  }, [urlLocation]);
 
-  // When region changes, reset city filter
-  useEffect(() => {
-    if (regionFilter !== "all") {
-      setCityFilter("all");
-    }
-  }, [regionFilter]);
-
-  // ⭐ Handle category change (SERVER-SIDE navigation)
+  // Handle category change
   const handleCategoryChange = (value: string) => {
-    setCategoryFilter(value);
+    setCategoryLabel(value); // Update UI immediately
+    setIsNavigating(true);
+
+    const params = new URLSearchParams();
+    params.set("page", "1");
+    if (value && value !== "all") params.set("category", value);
+
+    // Preserve location
+    if (cityFilter && cityFilter !== "all") params.set("location", cityFilter);
+
+    router.push(`/vendors?${params.toString()}`);
+    router.refresh();
+  };
+
+  // Handle city/location change
+  const handleCityChange = (value: string) => {
+    setCityLabel(value); // Update dropdown immediately
     setIsNavigating(true);
 
     const params = new URLSearchParams();
     params.set("page", "1");
 
-    if (value && value !== "all") {
-      params.set("category", value);
+    if (value && value !== "all") params.set("location", value);
+
+    // Preserve category filter
+    if (categoryLabel && categoryLabel !== "all") {
+      params.set("category", categoryLabel);
     }
 
     router.push(`/vendors?${params.toString()}`);
     router.refresh();
   };
 
-  // ⭐ Handle page change (SERVER-SIDE navigation)
+  // Handle page change
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setIsNavigating(true);
-
       const params = new URLSearchParams();
       params.set("page", page.toString());
-
-      const urlCategory = searchParams.get("category");
-      if (urlCategory && urlCategory !== "all") {
+      if (urlCategory && urlCategory !== "all")
         params.set("category", urlCategory);
-      }
-
+      if (urlLocation && urlLocation !== "all")
+        params.set("location", urlLocation);
       router.push(`/vendors?${params.toString()}`);
       router.refresh();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
-  // ⭐ Clear all filters (navigate to clean state)
+  // Clear all filters
   const clearAllFilters = () => {
     setSearchQuery("");
-    setRegionFilter("all");
     setCityFilter("all");
-    setCategoryFilter("all");
+    setCityLabel("all"); // ⭐ reset city label
+    setCategoryLabel("all"); // ⭐ reset category label
     setRatingFilter([0]);
     setSelectedVendorId(null);
     setIsNavigating(true);
@@ -332,11 +340,10 @@ export function VendorsClient({
     router.refresh();
   };
 
-  // Filter and transform places to vendors
+  // Filter and transform places
   const filteredAndSortedVendors = useMemo(() => {
     let filtered = initialPlaces;
 
-    // Apply search filter (client-side)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((place) => {
@@ -348,34 +355,20 @@ export function VendorsClient({
       });
     }
 
-    // Apply region filter (client-side)
-    if (regionFilter && regionFilter !== "all") {
-      filtered = filtered.filter((place) => place.region === regionFilter);
-    }
-
-    // Apply city filter (client-side)
     if (cityFilter && cityFilter !== "all") {
       filtered = filtered.filter((place) => place.city === cityFilter);
     }
 
-    // ⭐ NOTE: Category filtering is now handled SERVER-SIDE
-    // The initialPlaces already contain filtered results from the API
-    // No need to filter by category again on the client
-
-    // Convert to vendors
     let vendors = filtered.map((place) => placeToVendor(place, userLocation));
 
-    // Apply rating filter
     vendors = vendors.filter(
       (vendor) => ratingFilter[0] === 0 || vendor.rating >= ratingFilter[0],
     );
 
-    // Apply vendor selection from map
     if (selectedVendorId) {
       vendors = vendors.filter((vendor) => vendor.id === selectedVendorId);
     }
 
-    // Sort vendors
     vendors.sort((a, b) => {
       if (sortBy === "rating") return b.rating - a.rating;
       if (sortBy === "name") return a.name.localeCompare(b.name);
@@ -385,42 +378,26 @@ export function VendorsClient({
         if (b.distance === undefined) return -1;
         return a.distance - b.distance;
       }
-      return 0; // featured
+      return 0;
     });
 
     return vendors;
   }, [
     initialPlaces,
     searchQuery,
-    regionFilter,
     cityFilter,
-    // categoryFilter removed from dependencies - server handles it
     ratingFilter,
     selectedVendorId,
     sortBy,
     userLocation,
   ]);
 
-  // Paginate vendors (client-side pagination within the server page)
   const paginatedVendors = filteredAndSortedVendors;
 
-  // Compute available cities based on selected region and current page data
-  const availableCities = useMemo(() => {
-    if (regionFilter === "all") {
-      return cities.map((c) => c.name).sort();
-    }
-
-    // Filter cities that belong to selected region from initial places
-    const citiesInRegion = [
-      ...new Set(
-        initialPlaces
-          .filter((place) => place.region === regionFilter && place.city)
-          .map((place) => place.city!),
-      ),
-    ].sort();
-
-    return citiesInRegion;
-  }, [regionFilter, cities, initialPlaces]);
+  const availableCities = useMemo(
+    () => cities.map((c) => c.name).sort(),
+    [cities],
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -441,11 +418,9 @@ export function VendorsClient({
       {/* Main Content */}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Filters - Mobile/Tablet View */}
+          {/* Filters */}
           <div
-            className={`mb-8 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm ${
-              showMap ? "block" : "block lg:hidden"
-            }`}
+            className={`mb-8 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm ${showMap ? "block" : "block lg:hidden"}`}
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -467,39 +442,33 @@ export function VendorsClient({
             <VendorsFilters
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
-              categoryFilter={categoryFilter}
+              categoryFilter={urlCategory}
               setCategoryFilter={handleCategoryChange}
-              regionFilter={regionFilter}
-              setRegionFilter={setRegionFilter}
-              cityFilter={cityFilter}
-              setCityFilter={setCityFilter}
+              cityFilter={cityLabel}
+              setCityFilter={handleCityChange}
               ratingFilter={ratingFilter}
               setRatingFilter={setRatingFilter}
               categories={categories}
-              regions={regions}
               availableCities={availableCities}
               layout="grid"
             />
           </div>
 
+          {/* Desktop Layout */}
           <div className="flex gap-6">
-            {/* Sidebar Filter - Desktop Only */}
             {!showMap && (
               <div className="hidden lg:block lg:w-64 flex-shrink-0">
                 <div className="bg-white border border-gray-100 rounded-2xl p-6 sticky top-24">
                   <VendorsFilters
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
-                    categoryFilter={categoryFilter}
+                    categoryFilter={categoryLabel}
                     setCategoryFilter={handleCategoryChange}
-                    regionFilter={regionFilter}
-                    setRegionFilter={setRegionFilter}
-                    cityFilter={cityFilter}
-                    setCityFilter={setCityFilter}
+                    cityFilter={cityLabel}
+                    setCityFilter={handleCityChange}
                     ratingFilter={ratingFilter}
                     setRatingFilter={setRatingFilter}
                     categories={categories}
-                    regions={regions}
                     availableCities={availableCities}
                     layout="sidebar"
                     onClearFilters={clearAllFilters}
@@ -508,7 +477,6 @@ export function VendorsClient({
               </div>
             )}
 
-            {/* Main Content */}
             <div className="flex-1 min-w-0">
               {/* Top Bar */}
               <div className="mb-8">
@@ -532,7 +500,6 @@ export function VendorsClient({
                       setUserLocation={setUserLocation}
                       setSortBy={setSortBy}
                     />
-
                     <Button
                       variant={showMap ? "default" : "outline"}
                       onClick={() => setShowMap(!showMap)}
@@ -549,7 +516,7 @@ export function VendorsClient({
                 </div>
               </div>
 
-              {/* Map - Mobile */}
+              {/* Map Mobile */}
               {showMap && (
                 <div className="lg:hidden mb-6">
                   <InteractiveBusinessMap
@@ -561,15 +528,13 @@ export function VendorsClient({
                 </div>
               )}
 
-              {/* Vendor Grid with Map */}
+              {/* Vendor Grid */}
               <div
                 className={
                   showMap ? "grid grid-cols-1 lg:grid-cols-2 gap-6" : ""
                 }
               >
-                {/* Vendor Cards */}
                 <div className="relative">
-                  {/* ⭐ Loading Overlay for Cards */}
                   {isNavigating && (
                     <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center z-20">
                       <div className="flex flex-col items-center gap-4 bg-white border border-green-200 rounded-2xl px-8 py-6 shadow-lg">
@@ -586,7 +551,6 @@ export function VendorsClient({
                     </div>
                   )}
 
-                  {/* Results */}
                   {paginatedVendors.length > 0 && (
                     <div
                       className={
@@ -601,7 +565,6 @@ export function VendorsClient({
                     </div>
                   )}
 
-                  {/* No Results */}
                   {paginatedVendors.length === 0 && (
                     <div className="text-center py-24">
                       <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -619,7 +582,6 @@ export function VendorsClient({
                     </div>
                   )}
 
-                  {/* Pagination */}
                   {paginatedVendors.length > 0 && (
                     <div className="mt-12">
                       <VendorsPagination
@@ -634,7 +596,6 @@ export function VendorsClient({
                   )}
                 </div>
 
-                {/* Map Column - Desktop */}
                 {showMap && (
                   <div className="hidden lg:block">
                     <div className="sticky top-24">

@@ -141,135 +141,75 @@ export default async function Homepage() {
       <section className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Card 1: Who are we? - spans 1 column, 2 rows */}
+            {/* Card 1: Who are we? - LCP */}
             <Link
               href="/product/search"
               className="md:row-span-2 bg-[#6B7280] rounded-3xl overflow-hidden cursor-pointer group relative h-[600px]"
             >
               <div className="absolute inset-0">
                 <Image
-                  src="https://images.unsplash.com/photo-1762553159827-7a5d2167b55d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwd2lyZWxlc3MlMjBlYXJidWRzJTIwcHJvZHVjdHxlbnwxfHx8fDE3Njk5NzA0MTV8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                  src="/hero-images/new-balance.jpg"
                   alt="Earbuds"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  unoptimized
+                  priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40"></div>
               </div>
-              <div className="relative p-8 h-full flex flex-col justify-between">
-                <div>
-                  <h2 className="text-5xl text-white mb-4 leading-tight font-light">
-                    who
-                    <br />
-                    are
-                    <br />
-                    we?
-                  </h2>
-                </div>
-                <div>
-                  <p className="text-white text-base mb-1">
-                    We&apos;re <span className="font-bold">young & wild</span>
-                  </p>
-                  <p className="text-white text-base mb-1">
-                    <span className="font-bold">explorers</span>
-                  </p>
-                  <p className="text-white/90 text-sm">out on a journey</p>
-                  <p className="text-white/90 text-sm">
-                    to turn on your true vibe.
-                  </p>
-                </div>
-              </div>
             </Link>
 
-            {/* Card 2: Soundbar - spans 1 column */}
+            {/* Card 2 */}
             <Link
               href="/product/search"
               className="bg-[#8B9BA8] rounded-3xl overflow-hidden cursor-pointer group relative h-[292px]"
             >
               <div className="absolute inset-0">
                 <Image
-                  src="https://images.unsplash.com/photo-1710131459450-7c384b8be18f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBzb3VuZGJhciUyMGhvbWUlMjB0aGVhdGVyfGVufDF8fHx8MTc3MDA0MjQwOXww&ixlib=rb-4.1.0&q=80&w=1080"
+                  src="/hero-images/logictech.jpg"
                   alt="Soundbar"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  unoptimized
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-black/30"></div>
               </div>
-              <div className="relative p-8 h-full flex flex-col items-center justify-center text-center">
-                <h3 className="text-white text-xl mb-1">
-                  2.1 Channel Soundbar
-                </h3>
-                <p className="text-white/90 text-sm">with Wireless Subwoofer</p>
-              </div>
             </Link>
 
-            {/* Card 3: Headphones - spans 1 column */}
+            {/* Card 3 */}
             <Link
               href="/product/search"
               className="bg-[#8B7D7B] rounded-3xl overflow-hidden cursor-pointer group relative h-[292px]"
             >
               <div className="absolute inset-0">
                 <Image
-                  src="https://images.unsplash.com/photo-1762028892204-2ef68f7fcfd5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB3aXJlbGVzcyUyMGhlYWRwaG9uZXN8ZW58MXx8fHwxNzcwMDQyNDA3fDA&ixlib=rb-4.1.0&q=80&w=1080"
+                  src="/hero-images/caps.avif"
                   alt="Headphones"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  unoptimized
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
               </div>
-              <div className="relative p-8 h-full flex flex-col justify-between">
-                <div className="text-white/90 text-xs">
-                  <p>Every Beat Matters</p>
-                  <h3 className="text-2xl text-white mt-2 mb-1">
-                    RockerZ 660 PRO
-                  </h3>
-                  <p className="text-xs">60Hrs Audio | 40 Hours Playback</p>
-                </div>
-                <button className="bg-white hover:bg-gray-100 text-gray-900 px-6 py-2 rounded-full text-xs w-fit transition-colors font-medium">
-                  SHOP NOW
-                </button>
-              </div>
             </Link>
 
-            {/* Card 4: Bluetooth Speaker - spans 2 columns */}
+            {/* Card 4 */}
             <Link
               href="/product/search"
               className="lg:col-span-2 lg:col-start-2 bg-gradient-to-br from-[#FFF4E6] to-[#FFE8D6] rounded-3xl overflow-hidden cursor-pointer group h-[292px]"
             >
-              <div className="p-6 h-full flex flex-col justify-between">
-                <div className="flex gap-2 mb-4 flex-wrap">
-                  <span className="px-3 py-1 bg-white/80 rounded-full text-xs text-gray-800">
-                    Dual EQ Modes
-                  </span>
-                  <span className="px-3 py-1 bg-white/80 rounded-full text-xs text-gray-800">
-                    Movies
-                  </span>
-                  <span className="px-3 py-1 bg-gray-900 text-white rounded-full text-xs">
-                    Music
-                  </span>
-                </div>
+              <div className="h-full flex flex-col justify-between">
                 <div className="flex-1 flex items-center justify-center relative">
                   <Image
-                    src="https://images.unsplash.com/photo-1561291349-8389bdc0b202?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwYmx1ZXRvb3RoJTIwc3BlYWtlciUyMHByb2R1Y3QlMjB3aGl0ZXxlbnwxfHx8fDE3NzAwNDI0OTF8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                    alt="Bluetooth Speaker"
+                    src="/hero-images/apple-watch.webp"
+                    alt="apple watch series"
                     fill
                     className="object-cover"
                     sizes="(max-width: 1024px) 100vw, 66vw"
-                    unoptimized
+                    loading="lazy"
                   />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <span className="px-4 py-1 bg-gray-900 text-white rounded-full text-xs">
-                    Bluetooth
-                  </span>
-                  <span className="px-4 py-1 bg-gray-900 text-white rounded-full text-xs">
-                    v5.3
-                  </span>
                 </div>
               </div>
             </Link>
@@ -314,7 +254,7 @@ export default async function Homepage() {
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 16vw"
-                        unoptimized
+                        loading="lazy"
                       />
                     </div>
                     <p className="text-sm text-gray-900 text-center">
@@ -362,7 +302,7 @@ export default async function Homepage() {
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 16vw"
-                        unoptimized
+                        loading="lazy"
                       />
                     </div>
                     <p className="text-sm text-gray-900 text-center">
@@ -385,7 +325,7 @@ export default async function Homepage() {
               bestProducts.map((product: any) => (
                 <Link
                   key={product.id}
-                  href={`/product/${product.slug}`}
+                  href={`/products/${product.slug}`}
                   className="group"
                 >
                   <div className="aspect-square rounded-xl overflow-hidden bg-white mb-3 relative">
@@ -395,7 +335,7 @@ export default async function Homepage() {
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                       sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                      unoptimized
+                      loading="lazy"
                     />
                     <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100">
                       <Heart className="w-4 h-4 text-gray-700" />
@@ -404,16 +344,7 @@ export default async function Homepage() {
                   <h3 className="text-sm text-gray-900 mb-1 line-clamp-2">
                     {product.name}
                   </h3>
-                  <div className="flex items-center gap-1 mb-1">
-                    {product.rating && (
-                      <>
-                        <Star className="w-3 h-3 fill-gray-900 text-gray-900" />
-                        <span className="text-xs text-gray-700">
-                          {product.rating}
-                        </span>
-                      </>
-                    )}
-                  </div>
+
                   <p className="text-sm font-medium text-gray-900">
                     ${product.price}
                   </p>
@@ -428,7 +359,7 @@ export default async function Homepage() {
         </div>
       </section>
 
-      {/* Editor's Picks */}
+      {/* top Picks */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
@@ -445,7 +376,7 @@ export default async function Homepage() {
               editorsPicks.map((product: any) => (
                 <Link
                   key={product.id}
-                  href={`/product/${product.slug}`}
+                  href={`/products/${product.slug}`}
                   className="group"
                 >
                   <div className="aspect-square rounded-xl overflow-hidden bg-white mb-3 relative shadow-sm">
@@ -455,13 +386,13 @@ export default async function Homepage() {
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                       sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      unoptimized
+                      loading="lazy"
                     />
                     <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100">
                       <Heart className="w-4 h-4 text-gray-700" />
                     </button>
                     <div className="absolute top-3 left-3 px-2 py-1 bg-gray-900 text-white text-xs rounded-md">
-                      Editor&apos;s Pick
+                      Best Pick
                     </div>
                   </div>
                   <h3 className="text-sm text-gray-900 mb-1 line-clamp-2 font-medium">
@@ -470,16 +401,7 @@ export default async function Homepage() {
                   <p className="text-xs text-gray-600 mb-2">
                     {product.vendor || "ShopLocal"}
                   </p>
-                  <div className="flex items-center gap-1 mb-2">
-                    {product.rating && (
-                      <>
-                        <Star className="w-3 h-3 fill-gray-900 text-gray-900" />
-                        <span className="text-xs text-gray-700">
-                          {product.rating}
-                        </span>
-                      </>
-                    )}
-                  </div>
+
                   <p className="text-base font-medium text-gray-900">
                     ${product.price}
                   </p>
@@ -513,7 +435,7 @@ export default async function Homepage() {
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        unoptimized
+                        loading="lazy"
                       />
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
@@ -547,7 +469,7 @@ export default async function Homepage() {
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        unoptimized
+                        loading="lazy"
                       />
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
@@ -580,7 +502,7 @@ export default async function Homepage() {
               trendingProducts.map((product: any) => (
                 <Link
                   key={product.id}
-                  href={`/product/${product.slug}`}
+                  href={`/products/${product.slug}`}
                   className="group"
                 >
                   <div className="aspect-square rounded-xl overflow-hidden bg-white mb-3 relative">
@@ -590,7 +512,7 @@ export default async function Homepage() {
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                       sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
-                      unoptimized
+                      loading="lazy"
                     />
                     <div className="absolute top-2 left-2 px-2 py-1 bg-white text-gray-900 text-xs rounded-md font-medium">
                       Trending
@@ -658,7 +580,7 @@ export default async function Homepage() {
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  unoptimized
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
                 <div className="absolute bottom-6 left-6 right-6 text-white">
@@ -680,7 +602,7 @@ export default async function Homepage() {
               giftProducts.map((product: any) => (
                 <Link
                   key={product.id}
-                  href={`/product/${product.slug}`}
+                  href={`/products/${product.slug}`}
                   className="group"
                 >
                   <div className="aspect-square rounded-xl overflow-hidden bg-white mb-3 relative shadow-sm">
@@ -690,7 +612,7 @@ export default async function Homepage() {
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                       sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                      unoptimized
+                      loading="lazy"
                     />
                     <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100">
                       <ShoppingCart className="w-4 h-4 text-gray-700" />
@@ -727,10 +649,12 @@ export default async function Homepage() {
       <section className="py-20 bg-[#d2ffcc]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl text-gray-900 mb-2">What is ShopLocal?</h2>
+            <h2 className="text-4xl text-gray-900 mb-2">
+              Welcome to Berlin Houseware
+            </h2>
             <p className="text-sm text-gray-700">
               <Link href="/about" className="underline hover:text-gray-900">
-                Read our wonderfully weird story
+                Learn more about our story
               </Link>
             </p>
           </div>
@@ -738,53 +662,51 @@ export default async function Homepage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             <div className="text-left">
               <h3 className="text-lg font-medium text-gray-900 mb-3">
-                A community doing good
+                Quality Home Essentials
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed">
-                ShopLocal is a global online marketplace, where people come
-                together to make, sell, buy, and collect unique items.
-                We&apos;re also a community pushing for positive change for
-                small businesses, people, and the planet.{" "}
+                Berlin Houseware brings premium, durable, and stylish home
+                products to your doorstep. From kitchen tools to décor, every
+                item is curated for quality and longevity.{" "}
                 <Link href="/about" className="underline hover:text-gray-900">
-                  Here are some of the ways we&apos;re making a positive impact,
-                  together.
+                  Discover our commitment to excellence
                 </Link>
               </p>
             </div>
 
             <div className="text-left">
               <h3 className="text-lg font-medium text-gray-900 mb-3">
-                Support independent creators
+                Supporting Local Artisans
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed">
-                There&apos;s no ShopLocal warehouse – just millions of people
-                selling the things they love. We make the whole process easy,
-                helping you connect directly with makers to find something
-                extraordinary.
+                Our products are crafted in collaboration with local designers
+                and artisans. We ensure each piece is unique, sustainable, and
+                adds a touch of Berlin style to your home.
               </p>
             </div>
 
             <div className="text-left">
               <h3 className="text-lg font-medium text-gray-900 mb-3">
-                Peace of mind
+                Reliable Service
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed">
-                Your privacy is the highest priority of our dedicated team. And
-                if you ever need assistance, we are always ready to step in for
-                support.
+                Customer satisfaction is our top priority. Enjoy seamless
+                shopping, fast delivery, and dedicated support for every
+                purchase.
               </p>
             </div>
           </div>
 
           <div className="text-center">
             <p className="text-base text-gray-900 mb-6">
-              Have a question? Well, we&apos;ve got some answers.
+              Have a question about our products or services? We're here to
+              help.
             </p>
             <Link
               href="/help"
               className="inline-block px-6 py-3 bg-white border-2 border-gray-900 text-gray-900 rounded-full hover:bg-gray-900 hover:text-white transition-colors font-medium"
             >
-              Go to Help Center
+              Visit Our Help Center
             </Link>
           </div>
         </div>

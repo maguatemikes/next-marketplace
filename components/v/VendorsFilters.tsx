@@ -29,14 +29,11 @@ interface VendorsFiltersProps {
   setSearchQuery: (value: string) => void;
   categoryFilter: string;
   setCategoryFilter: (value: string) => void;
-  regionFilter: string;
-  setRegionFilter: (value: string) => void;
   cityFilter: string;
   setCityFilter: (value: string) => void;
   ratingFilter: number[];
   setRatingFilter: (value: number[]) => void;
   categories: Category[];
-  regions: Region[];
   availableCities: string[];
   layout: "grid" | "sidebar";
   onClearFilters?: () => void;
@@ -47,14 +44,11 @@ export function VendorsFilters({
   setSearchQuery,
   categoryFilter,
   setCategoryFilter,
-  regionFilter,
-  setRegionFilter,
   cityFilter,
   setCityFilter,
   ratingFilter,
   setRatingFilter,
   categories,
-  regions,
   availableCities,
   layout,
   onClearFilters,
@@ -89,27 +83,6 @@ export function VendorsFilters({
               {categories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.name}>
                   {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Region */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-gray-600" />
-            <label className="text-sm text-gray-900">Region</label>
-          </div>
-          <Select value={regionFilter} onValueChange={setRegionFilter}>
-            <SelectTrigger className="bg-gray-50 border-0 rounded-lg h-9">
-              <SelectValue placeholder="All Regions" />
-            </SelectTrigger>
-            <SelectContent className="max-h-[300px] overflow-y-auto">
-              <SelectItem value="all">All Regions</SelectItem>
-              {regions.map((region) => (
-                <SelectItem key={region.id} value={region.name}>
-                  {region.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -197,29 +170,6 @@ export function VendorsFilters({
               {categories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.name}>
                   {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="h-px bg-gray-100" />
-
-        {/* Region */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-gray-600" />
-            <label className="text-sm text-gray-900">Region</label>
-          </div>
-          <Select value={regionFilter} onValueChange={setRegionFilter}>
-            <SelectTrigger className="bg-gray-50 border-0 rounded-lg h-9">
-              <SelectValue placeholder="All Regions" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Regions</SelectItem>
-              {regions.map((region) => (
-                <SelectItem key={region.id} value={region.name}>
-                  {region.name}
                 </SelectItem>
               ))}
             </SelectContent>

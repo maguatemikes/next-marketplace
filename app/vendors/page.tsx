@@ -8,7 +8,7 @@ export const revalidate = 0; // Disable static generation
 
 // Server Component - Fetches data with PAGINATION
 export const metadata = {
-  title: "Business Directory - ShopLocal",
+  title: "Business Directory - Berlin Houseware",
   description:
     "Discover trusted local businesses and independent sellers in your community. Browse verified vendors, local services, and unique shops near you on ShopLocal marketplace.",
   keywords:
@@ -158,7 +158,6 @@ async function fetchCategories(): Promise<Category[]> {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      cache: "force-cache",
       next: { revalidate: 3600, tags: ["categories"] },
     });
 
@@ -204,7 +203,6 @@ async function fetchLocations(): Promise<{
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        cache: "force-cache",
         next: { revalidate: 3600, tags: ["regions"] },
       });
 
@@ -221,13 +219,12 @@ async function fetchLocations(): Promise<{
     }
 
     try {
-      const citiesUrl = `${config.api.geodir}/places/cities`;
+      const citiesUrl = `${config.api.wordpress}/place-city?per_page=100&orderby=count&order=desc`;
       const citiesResponse = await fetch(citiesUrl, {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        cache: "force-cache",
         next: { revalidate: 3600, tags: ["cities"] },
       });
 
@@ -263,7 +260,8 @@ async function fetchLocations(): Promise<{
 async function fetchPaginatedPlaces(
   page: number = 1,
   perPage: number = 12,
-  categoryFilter?: string, // ⭐ NEW: Category filter parameter
+  categoryFilter?: string, // ⭐ Category filter parameter
+  locationFilter?: string, // ⭐ NEW: Location filter parameter
 ): Promise<PaginatedPlacesResponse> {
   try {
     // ⭐ USE CUSTOM API ENDPOINT (or custom-api-test if available)
@@ -278,6 +276,14 @@ async function fetchPaginatedPlaces(
       );
     } else {
       console.log(`🔧 Using Custom API endpoint for all places`);
+    }
+
+    // ⭐ NEW: Add location parameter for server-side filtering
+    if (locationFilter && locationFilter !== "all") {
+      url += `&location=${encodeURIComponent(locationFilter)}`;
+      console.log(
+        `🔧 Using Custom API endpoint with location filter: ${locationFilter}`,
+      );
     }
 
     console.log(`🌐 Fetching URL: ${url}`);
@@ -307,6 +313,8 @@ async function fetchPaginatedPlaces(
 
     console.log(`📦 API Response:`, {
       endpoint: "custom-api",
+      category: categoryFilter || "all",
+      location: locationFilter || "all",
       total,
       totalPages,
       dataCount: placesData.length,
@@ -314,7 +322,7 @@ async function fetchPaginatedPlaces(
 
     if (placesData.length === 0) {
       console.warn(
-        `⚠️ No places found for category: ${categoryFilter || "all"}`,
+        `⚠️ No places found for category: ${categoryFilter || "all"}, location: ${locationFilter || "all"}`,
       );
       return {
         places: [],
@@ -333,7 +341,6 @@ async function fetchPaginatedPlaces(
       try {
         const placeResponse = await fetch(`${config.api.geodir}/places/${id}`, {
           headers: { Accept: "application/json" },
-          cache: "force-cache", // ⭐ Aggressive caching
           next: {
             revalidate: 600,
             tags: [`place-${id}`],
@@ -360,7 +367,10 @@ async function fetchPaginatedPlaces(
       return {
         ...place,
         gd_custom_ratings: customData?.rating || place.rating || 0,
-        claimed: customData?.claimed || 0,
+        claimed:
+          customData?.claimed !== undefined
+            ? customData.claimed
+            : place.claimed || 0,
       };
     });
 
@@ -384,7 +394,6 @@ async function fetchPaginatedPlaces(
                 `${config.api.wordpress}/users/${authorId}`,
                 {
                   headers: { Accept: "application/json" },
-                  cache: "force-cache", // ⭐ Aggressive caching
                   next: {
                     revalidate: 86400,
                     tags: [`user-${authorId}`],
@@ -455,23 +464,29 @@ async function fetchPaginatedPlaces(
 export default async function VendorsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; category?: string }>; // ⭐ Add category param
+  searchParams: Promise<{
+    page?: string;
+    category?: string;
+    location?: string;
+  }>; // ⭐ Add location param
 }) {
   // Get current page from URL (await searchParams for Next.js 15)
   const params = await searchParams;
   const currentPage = parseInt(params.page || "1", 10);
   const categoryFilter = params.category || "all"; // ⭐ Get category from URL
+  const locationFilter = params.location || "all"; // ⭐ NEW: Get location from URL
   const perPage = 12;
 
   console.log("🏪 Vendors Page - Server Component Rendering...");
   console.log(`📄 Current Page: ${currentPage}`);
   console.log(`🏷️ Category Filter: ${categoryFilter}`); // ⭐ Log category
+  console.log(`📍 Location Filter: ${locationFilter}`); // ⭐ NEW: Log location
 
   // Fetch data in parallel
   const [categories, locations, paginatedData] = await Promise.all([
     fetchCategories(),
     fetchLocations(),
-    fetchPaginatedPlaces(currentPage, perPage, categoryFilter), // ⭐ Pass category filter
+    fetchPaginatedPlaces(currentPage, perPage, categoryFilter, locationFilter), // ⭐ Pass both filters
   ]);
 
   console.log(
