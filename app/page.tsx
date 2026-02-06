@@ -143,31 +143,33 @@ export default async function Homepage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Card 1: Who are we? - LCP */}
             <Link
-              href="/product/search"
-              className="md:row-span-2 bg-[#6B7280] rounded-3xl overflow-hidden cursor-pointer group relative h-[600px]"
+              href="/products?page=1&search=new+balance"
+              aria-label="View New Balance Shoes"
+              className="md:row-span-2 bg-[#6B7280] rounded-3xl overflow-hidden cursor-pointer group relative h-150"
             >
               <div className="absolute inset-0">
                 <Image
                   src="/hero-images/new-balance.jpg"
-                  alt="Earbuds"
+                  alt="New Balance Shoes"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40"></div>
+                <div className="absolute inset-0 bg-linear-to-b from-black/40 via-transparent to-black/40"></div>
               </div>
             </Link>
 
             {/* Card 2 */}
             <Link
-              href="/product/search"
+              href="/products?page=1&search=logitech"
               className="bg-[#8B9BA8] rounded-3xl overflow-hidden cursor-pointer group relative h-[292px]"
+              aria-label="view logitech headphones"
             >
               <div className="absolute inset-0">
                 <Image
                   src="/hero-images/logictech.jpg"
-                  alt="Soundbar"
+                  alt="An image of logitech graphics for headphones"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -179,13 +181,14 @@ export default async function Homepage() {
 
             {/* Card 3 */}
             <Link
-              href="/product/search"
+              href="/products?page=1&search=new+era"
               className="bg-[#8B7D7B] rounded-3xl overflow-hidden cursor-pointer group relative h-[292px]"
+              aria-label="browser our new era caps"
             >
               <div className="absolute inset-0">
                 <Image
                   src="/hero-images/caps.avif"
-                  alt="Headphones"
+                  alt="new era caps"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"

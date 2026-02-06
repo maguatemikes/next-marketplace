@@ -111,7 +111,7 @@ export async function generateMetadata({
 
   const vendorName = product.vendor || "trusted sellers";
 
-  const title = `${product.name} | ShopLocal`;
+  const title = `${product.name} | Berlin Houseware`;
   const description =
     product.description?.slice(0, 160) ||
     `Buy ${product.name} at the best price from ${vendorName}.`;
