@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { VendorsClient } from "@/components/v/VendorsClient";
 import { config } from "@/lib/config";
+import MapTesting from "@/components/testing/MapTesting";
 
 // ⭐ Route Segment Config - Make page DYNAMIC to respond to URL changes
 export const dynamic = "force-dynamic"; // Always run on the server for each request

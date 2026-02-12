@@ -73,7 +73,11 @@ export default function CheckoutForm({
       const orderData: any = {
         items: cartItems,
         billing,
-        shipping: { id: "test", title: "Test Shipping", cost: "0.00" },
+        shipping: {
+          id: "test",
+          title: "Test Shipping",
+          cost: shipping.toFixed(2),
+        },
         totals: { subtotal, shipping, tax, total },
         date: new Date().toISOString(),
         isTestMode,
@@ -93,6 +97,7 @@ export default function CheckoutForm({
         const cardElement = elements.getElement(CardElement);
         if (!cardElement) throw new Error("Card element not found");
 
+        console.log("💳 Creating payment method...");
         const { error: stripeError, paymentMethod } =
           await stripe.createPaymentMethod({
             type: "card",
@@ -112,57 +117,65 @@ export default function CheckoutForm({
 
         if (stripeError) throw new Error(stripeError.message);
 
+        console.log("✅ Payment method created:", paymentMethod?.id);
+
+        // ✅ FIXED: Match PHP API structure
+        const apiPayload = {
+          customer_id: 0, // 0 for guest checkout, or pass actual user ID
+          items: cartItems.map((item) => ({
+            product_id: parseInt(item.id), // Convert string to integer
+            qty: item.quantity,
+          })),
+          billing: {
+            first_name: billing.firstName,
+            last_name: billing.lastName,
+            address_1: billing.address,
+            address_2: "",
+            city: billing.city,
+            state: billing.state,
+            postcode: billing.zip,
+            country: billing.country,
+            email: billing.email,
+            phone: billing.phone || "",
+          },
+          shipping_lines: [
+            {
+              method_id: "flat_rate",
+              method_title: "Standard Shipping",
+              total: shipping.toFixed(2),
+            },
+          ],
+          payment_token: paymentMethod.id, // ✅ Changed from payment_method
+        };
+
+        console.log("📤 Sending order to API:", apiPayload);
+
         // Call WooCommerce API
         const res = await fetch(
           "https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/create-order",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              payment_method: "stripe",
-              payment_token: paymentMethod.id,
-              billing: {
-                first_name: billing.firstName,
-                last_name: billing.lastName,
-                address_1: billing.address,
-                city: billing.city,
-                state: billing.state,
-                postcode: billing.zip,
-                country: billing.country,
-                email: billing.email,
-                phone: billing.phone || "",
-              },
-              shipping: {
-                first_name: billing.firstName,
-                last_name: billing.lastName,
-                address_1: billing.address,
-                city: billing.city,
-                state: billing.state,
-                postcode: billing.zip,
-                country: billing.country,
-              },
-              line_items: cartItems.map((item) => ({
-                product_id: item.id,
-                quantity: item.quantity,
-                total: (item.price * item.quantity).toFixed(2),
-              })),
-              shipping_lines: [
-                {
-                  method_id: "test",
-                  method_title: "Test Shipping",
-                  total: "0.00",
-                },
-              ],
-            }),
+            body: JSON.stringify(apiPayload),
           },
         );
 
         const data = await res.json();
-        if (!res.ok || !data.success)
-          throw new Error(data.message || "Failed to create order");
+        console.log("📥 API Response:", data);
 
-        orderId = data.order_id;
+        // ✅ FIXED: Check for error in response
+        if (!res.ok || data.error) {
+          throw new Error(
+            data.error || data.message || "Failed to create order",
+          );
+        }
+
+        orderId = data.order_id.toString();
         orderData.orderId = orderId;
+        orderData.paymentIntent = data.payment_intent;
+        orderData.paymentStatus = data.payment_status;
+
+        console.log("✅ Order created successfully:", orderId);
       }
 
       // ✅ Save to sessionStorage before navigation
@@ -174,7 +187,6 @@ export default function CheckoutForm({
       console.log("🧹 Cart cleared");
 
       // ✅ Navigate to success page with orderId query
-      // Use window.location.href to avoid checkout page redirect on empty cart
       const successUrl = `/checkout/success?orderId=${orderId}`;
       console.log("🔄 Navigating to:", successUrl);
 
@@ -271,7 +283,10 @@ export default function CheckoutForm({
 
       {/* Error Message */}
       {error && (
-        <p className="text-sm text-red-500 text-center mt-2">{error}</p>
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg mt-4">
+          <p className="text-sm text-red-600 font-medium">Error:</p>
+          <p className="text-sm text-red-500 mt-1">{error}</p>
+        </div>
       )}
     </form>
   );

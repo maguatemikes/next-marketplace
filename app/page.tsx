@@ -1,5 +1,19 @@
 // Next.js 15 Server Component - Etsy-style Homepage with Bento Grid
-import { Heart, ShoppingCart, Star } from "lucide-react";
+import {
+  Heart,
+  ShoppingCart,
+  Star,
+  ShoppingBag,
+  Package,
+  Shirt,
+  Wrench,
+  Baby,
+  Gift,
+  Laptop,
+  Home,
+  Sparkles,
+  Briefcase,
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import BrandCarousel from "@/components/home-comp/BrandCarousel";
@@ -35,7 +49,7 @@ interface Brand {
 async function fetchFeaturedProducts(): Promise<Product[]> {
   try {
     const res = await fetch(
-      "https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/products?per_page=30",
+      "https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/products?per_page=100",
       {
         next: { revalidate: 300 }, // Revalidate every 5 minutes
         headers: { Accept: "application/json" },
@@ -119,6 +133,14 @@ function getProductImage(product: Product): string {
   );
 }
 
+const fetchCategoryImage = async () => {
+  const res = await fetch(
+    "https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/categories/",
+  );
+  const data = await res.json();
+  return data;
+};
+
 export default async function Homepage() {
   // Fetch all data in parallel on the server
   const [products, categories, brands] = await Promise.all([
@@ -130,10 +152,41 @@ export default async function Homepage() {
   // Slice products for different sections
   const bestProducts = products.slice(0, 10);
   const editorsPicks = products.slice(10, 14);
-  const categoryShowcase = categories.slice(0, 6);
   const trendingProducts = products.slice(14, 20);
   const giftProducts = products.slice(20, 25);
   const featuredBrands = brands.slice(0, 8);
+  const standardCategories = await fetchCategoryImage();
+  const showFirstFiveCategory = standardCategories.slice(0, 6);
+
+  // Category icons mapping
+  const categoryIcons: { [key: string]: any } = {
+    "Amazon FBA Supplies": ShoppingBag,
+    "Apparel / Clothing": Shirt,
+    "Art & Supplies": Sparkles,
+    Automotive: Wrench,
+    "Baby Items": Baby,
+    "Business Services": Briefcase,
+    "Computer Products": Laptop,
+    Electronics: Laptop,
+    Gifts: Gift,
+    "Housewares / Home": Home,
+  };
+
+  // Default category list with icons
+  const defaultCategories = [
+    { name: "Amazon FBA Supplies", slug: "amazon-fba", icon: ShoppingBag },
+    { name: "Apparel / Clothing", slug: "apparel", icon: Shirt },
+    { name: "Art & Supplies", slug: "art-supplies", icon: Sparkles },
+    { name: "Automotive", slug: "automotive", icon: Wrench },
+    { name: "Baby Items", slug: "baby", icon: Baby },
+    { name: "Business Services", slug: "business", icon: Briefcase },
+    { name: "Computer Products", slug: "computers", icon: Laptop },
+    { name: "Electronics", slug: "electronics", icon: Laptop },
+    { name: "Gifts", slug: "gifts", icon: Gift },
+    { name: "Housewares / Home", slug: "housewares", icon: Home },
+    { name: "General Merchandise", slug: "general", icon: Package },
+    { name: "Fashion Accessories", slug: "fashion", icon: Sparkles },
+  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -233,87 +286,6 @@ export default async function Homepage() {
             </Link>
           </div>
           <BrandCarousel brands={featuredBrands} />
-        </div>
-      </section>
-
-      {/* Jump into featured interests */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl text-gray-900 mb-8">
-            Jump into featured interests
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {categoryShowcase.length > 0
-              ? categoryShowcase.map((category, idx) => (
-                  <Link
-                    key={category.slug}
-                    href={`/product/search?category=${category.slug}`}
-                    className="group"
-                  >
-                    <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-2 relative">
-                      <Image
-                        src={`https://images.unsplash.com/photo-${1515562141207 + idx}?w=300&h=300&fit=crop`}
-                        alt={category.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 16vw"
-                        loading="lazy"
-                      />
-                    </div>
-                    <p className="text-sm text-gray-900 text-center">
-                      {category.name}
-                    </p>
-                  </Link>
-                ))
-              : [
-                  {
-                    name: "Jewelry",
-                    image:
-                      "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&h=300&fit=crop",
-                  },
-                  {
-                    name: "Home Decor",
-                    image:
-                      "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=300&h=300&fit=crop",
-                  },
-                  {
-                    name: "Art & Prints",
-                    image:
-                      "https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=300&h=300&fit=crop",
-                  },
-                  {
-                    name: "Clothing",
-                    image:
-                      "https://images.unsplash.com/photo-1445205170230-053b83016050?w=300&h=300&fit=crop",
-                  },
-                  {
-                    name: "Accessories",
-                    image:
-                      "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?w=300&h=300&fit=crop",
-                  },
-                  {
-                    name: "Craft Supplies",
-                    image:
-                      "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=300&h=300&fit=crop",
-                  },
-                ].map((interest, idx) => (
-                  <Link key={idx} href="/product/search" className="group">
-                    <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-2 relative">
-                      <Image
-                        src={interest.image}
-                        alt={interest.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 16vw"
-                        loading="lazy"
-                      />
-                    </div>
-                    <p className="text-sm text-gray-900 text-center">
-                      {interest.name}
-                    </p>
-                  </Link>
-                ))}
-          </div>
         </div>
       </section>
 
@@ -419,77 +391,69 @@ export default async function Homepage() {
         </div>
       </section>
 
-      {/* Shop by Category - Large Feature */}
-      <section className="py-16 bg-gray-50">
+      {/* Wholesale Products Categories - NEW SECTION */}
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl text-gray-900 mb-8">Shop by Category</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories.slice(0, 6).length > 0
-              ? categories.slice(0, 6).map((category, idx) => (
-                  <Link
-                    key={category.slug}
-                    href={`/product/search?category=${category.slug}`}
-                    className="group relative rounded-2xl overflow-hidden h-64"
-                  >
-                    <div className="relative w-full h-full">
-                      <Image
-                        src={`https://images.unsplash.com/photo-${1599643478518 + idx * 1000}?w=600&h=400&fit=crop`}
-                        alt={category.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                    <div className="absolute bottom-6 left-6 right-6 text-white">
-                      <h3 className="text-xl font-medium mb-1">
-                        {category.name}
-                      </h3>
-                      <p className="text-sm text-white/90">
-                        {category.count} items
-                      </p>
-                    </div>
-                  </Link>
-                ))
-              : [
-                  { name: "Jewelry & Accessories", count: "2,345 items" },
-                  { name: "Home & Living", count: "5,678 items" },
-                  { name: "Art & Collectibles", count: "1,234 items" },
-                  { name: "Clothing & Shoes", count: "3,456 items" },
-                  { name: "Craft Supplies", count: "4,321 items" },
-                  { name: "Electronics & Gadgets", count: "1,987 items" },
-                ].map((category, idx) => (
-                  <Link
-                    key={idx}
-                    href="/product/search"
-                    className="group relative rounded-2xl overflow-hidden h-64"
-                  >
-                    <div className="relative w-full h-full">
-                      <Image
-                        src={`https://images.unsplash.com/photo-${1599643478518 + idx * 1000}?w=600&h=400&fit=crop`}
-                        alt={category.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                    <div className="absolute bottom-6 left-6 right-6 text-white">
-                      <h3 className="text-xl font-medium mb-1">
-                        {category.name}
-                      </h3>
-                      <p className="text-sm text-white/90">{category.count}</p>
-                    </div>
-                  </Link>
-                ))}
+          <div className="mb-12">
+            <h2 className="text-3xl md:text-4xl text-gray-900 mb-2">
+              BerlinsMarket: Your Wholesale Product
+            </h2>
+            <p className="text-3xl md:text-4xl text-gray-900">
+              Source Across All Major Categories
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {categories.length > 0
+              ? categories.slice(0, 24).map((category) => {
+                  const IconComponent = categoryIcons[category.name] || Package;
+                  return (
+                    <Link
+                      key={category.slug}
+                      href={`/products?category=${category.slug}`}
+                      className="group flex items-start gap-3 p-4 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <IconComponent className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-medium text-gray-900 mb-0.5 line-clamp-2 group-hover:text-green-600 transition-colors">
+                          {category.name}
+                        </h3>
+                        <p className="text-xs text-gray-500">
+                          +{category.count > 0 ? category.count : "120k"}{" "}
+                          products
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })
+              : defaultCategories.map((category) => {
+                  const IconComponent = category.icon;
+                  return (
+                    <Link
+                      key={category.slug}
+                      href={`/product/search?category=${category.slug}`}
+                      className="group flex items-start gap-3 p-4 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <IconComponent className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-medium text-gray-900 mb-0.5 line-clamp-2 group-hover:text-green-600 transition-colors">
+                          {category.name}
+                        </h3>
+                        <p className="text-xs text-gray-500">+120k products</p>
+                      </div>
+                    </Link>
+                  );
+                })}
           </div>
         </div>
       </section>
 
       {/* Trending Now */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl text-gray-900">Trending Now</h2>
@@ -542,7 +506,7 @@ export default async function Homepage() {
       </section>
 
       {/* Gift Ideas */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl text-gray-900 mb-8">Gift Ideas</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -597,7 +561,7 @@ export default async function Homepage() {
       </section>
 
       {/* More to explore */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl text-gray-900 mb-8">More to explore</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -653,7 +617,7 @@ export default async function Homepage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-4xl text-gray-900 mb-2">
-              Welcome to Berlin Houseware
+              Welcome to BerlinsMarket
             </h2>
             <p className="text-sm text-gray-700">
               <Link href="/about" className="underline hover:text-gray-900">
@@ -665,45 +629,46 @@ export default async function Homepage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             <div className="text-left">
               <h3 className="text-lg font-medium text-gray-900 mb-3">
-                Quality Home Essentials
+                Wholesale Marketplace
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed">
-                Berlin Houseware brings premium, durable, and stylish home
-                products to your doorstep. From kitchen tools to décor, every
-                item is curated for quality and longevity.{" "}
+                BerlinsMarket connects resellers and retailers with verified
+                wholesale suppliers across 120+ categories. Access authentic
+                products at true wholesale prices with transparent pricing and
+                bulk order capabilities.{" "}
                 <Link href="/about" className="underline hover:text-gray-900">
-                  Discover our commitment to excellence
+                  Discover how we verify suppliers
                 </Link>
               </p>
             </div>
 
             <div className="text-left">
               <h3 className="text-lg font-medium text-gray-900 mb-3">
-                Supporting Local Artisans
+                Built for Resellers
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed">
-                Our products are crafted in collaboration with local designers
-                and artisans. We ensure each piece is unique, sustainable, and
-                adds a touch of Berlin style to your home.
+                Whether you're an Amazon FBA seller, eBay reseller, or
+                brick-and-mortar retailer, our platform offers volume discounts,
+                dropshipping options, and white-label opportunities to help grow
+                your business.
               </p>
             </div>
 
             <div className="text-left">
               <h3 className="text-lg font-medium text-gray-900 mb-3">
-                Reliable Service
+                Verified Suppliers
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed">
-                Customer satisfaction is our top priority. Enjoy seamless
-                shopping, fast delivery, and dedicated support for every
-                purchase.
+                Every supplier on BerlinsMarket is verified for authenticity and
+                reliability. We ensure competitive pricing, quality products,
+                and professional service for every wholesale transaction.
               </p>
             </div>
           </div>
 
           <div className="text-center">
             <p className="text-base text-gray-900 mb-6">
-              Have a question about our products or services? We're here to
-              help.
+              Ready to start sourcing wholesale products for your business?
             </p>
             <Link
               href="/help"

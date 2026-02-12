@@ -128,7 +128,7 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                     <button
                       onClick={() => {
                         onOpenChange(false);
-                        router.push(`/product/${item.id}/`);
+                        router.push(`/products/${item.id}/`);
                       }}
                       className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 relative"
                     >

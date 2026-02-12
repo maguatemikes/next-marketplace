@@ -166,7 +166,7 @@ export function ProductFilters({
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", page.toString());
     router.push(`?${params.toString()}`);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // ✅ CHANGE: Only client-side filter for UPC and acceptsOffers
