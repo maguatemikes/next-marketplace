@@ -25,9 +25,24 @@ export function DirectoryContent({ viewMode, promise }: DirectoryContentProps) {
   // Unwrap the promise using React.use()
   const { data, pagination } = use(promise);
 
+  // Calculate showing range
+  const { currentPage, perPage, total } = pagination;
+  const startItem = (currentPage - 1) * perPage + 1;
+  const endItem = Math.min(currentPage * perPage, total);
+
   if (viewMode === "grid") {
     return (
       <div className="space-y-6">
+        {/* Pagination Info Bar */}
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <span>
+            Showing {startItem}-{endItem} of {total} businesses
+          </span>
+          <span>
+            Page {currentPage} of {pagination.totalPages}
+          </span>
+        </div>
+
         <DirectoryLayout data={data} viewMode={viewMode} />
         <DirectoryPagination
           totalPages={pagination.totalPages}
@@ -40,6 +55,16 @@ export function DirectoryContent({ viewMode, promise }: DirectoryContentProps) {
   // Map View: Split layout with cards on left and map on right
   return (
     <div className="space-y-6">
+      {/* Pagination Info Bar */}
+      <div className="flex items-center justify-between text-sm text-gray-600">
+        <span>
+          Showing {startItem}-{endItem} of {total} businesses
+        </span>
+        <span>
+          Page {currentPage} of {pagination.totalPages}
+        </span>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Left: Cards Grid (2 columns) */}
         <div>

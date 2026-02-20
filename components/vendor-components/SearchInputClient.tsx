@@ -28,31 +28,33 @@ export function SearchInputClient({
     setSearchValue(currentSearch);
   }, [currentSearch]);
 
-  // Debounced URL update
-  useEffect(() => {
+  // Handle search execution
+  const handleSearch = () => {
     // Only update if searchValue is different from URL
     if (searchValue === currentSearch) {
       return;
     }
 
-    const timer = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams.toString());
 
-      if (searchValue.trim() === "") {
-        params.delete("search");
-      } else {
-        params.set("search", searchValue);
-      }
+    if (searchValue.trim() === "") {
+      params.delete("search");
+    } else {
+      params.set("search", searchValue.trim());
+    }
 
-      // Reset to page 1 when searching
-      params.delete("page");
+    // Reset to page 1 when searching
+    params.delete("page");
 
-      router.replace(`?${params.toString()}`, { scroll: false });
-    }, 500); // 500ms debounce delay
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue, currentSearch]); // ✅ Depend on searchValue and currentSearch (not searchParams object)
+  // Handle Enter key press
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   return (
     <div className="space-y-2">
@@ -64,10 +66,11 @@ export function SearchInputClient({
         <Input
           id={id}
           type="text"
-          placeholder="Search businesses..."
+          placeholder="Search businesses... (Press Enter)"
           className="pl-10 h-10 bg-gray-50"
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
       </div>
     </div>

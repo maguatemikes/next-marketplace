@@ -75,63 +75,68 @@ export function MapView({ items = [] }: MapViewProps) {
     let mounted = true;
 
     const loadLeaflet = async () => {
-      // Add CSS
-      if (!document.getElementById("leaflet-css")) {
-        const link = document.createElement("link");
-        link.id = "leaflet-css";
-        link.rel = "stylesheet";
-        link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-        link.crossOrigin = "anonymous";
-        document.head.appendChild(link);
-      }
-
-      // Load Leaflet JS
-      if (!(window as any).L) {
-        const script = document.createElement("script");
-        script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-        script.crossOrigin = "anonymous";
-        document.head.appendChild(script);
-
-        await new Promise((resolve) => {
-          script.onload = resolve;
-        });
-      }
-
-      const L = (window as any).L;
-
-      if (!L || !mounted) {
-        console.error("Leaflet failed to load");
-        return;
-      }
-
-      // Wait a bit for Leaflet CSS to be fully applied
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Initialize map
-      if (!mapInstanceRef.current && mapRef.current && mounted) {
-        try {
-          // Default to center of USA
-          const map = L.map(mapRef.current).setView([39.8283, -98.5795], 4);
-          mapInstanceRef.current = map;
-
-          // Add OpenStreetMap tiles
-          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "© OpenStreetMap contributors",
-            maxZoom: 19,
-          }).addTo(map);
-
-          // Create marker layer
-          markersLayerRef.current = L.layerGroup().addTo(map);
-
-          // Wait for map to finish loading
-          map.whenReady(() => {
-            if (mounted) {
-              setIsMapReady(true);
-            }
-          });
-        } catch (error) {
-          console.error("Error initializing map:", error);
+      try {
+        // Add CSS
+        if (!document.getElementById("leaflet-css")) {
+          const link = document.createElement("link");
+          link.id = "leaflet-css";
+          link.rel = "stylesheet";
+          link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+          link.crossOrigin = "anonymous";
+          document.head.appendChild(link);
         }
+
+        // Load Leaflet JS
+        if (!(window as any).L) {
+          const script = document.createElement("script");
+          script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+          script.crossOrigin = "anonymous";
+          document.head.appendChild(script);
+
+          await new Promise((resolve, reject) => {
+            script.onload = resolve;
+            script.onerror = reject;
+          });
+        }
+
+        const L = (window as any).L;
+
+        if (!L || !mounted) {
+          console.error("Leaflet failed to load");
+          return; // ✅ Exit early if Leaflet failed to load
+        }
+
+        // Wait a bit for Leaflet CSS to be fully applied
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Initialize map
+        if (!mapInstanceRef.current && mapRef.current && mounted) {
+          try {
+            // Default to center of USA
+            const map = L.map(mapRef.current).setView([39.8283, -98.5795], 4);
+            mapInstanceRef.current = map;
+
+            // Add OpenStreetMap tiles
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+              attribution: "© OpenStreetMap contributors",
+              maxZoom: 19,
+            }).addTo(map);
+
+            // Create marker layer
+            markersLayerRef.current = L.layerGroup().addTo(map);
+
+            // Wait for map to finish loading
+            map.whenReady(() => {
+              if (mounted) {
+                setIsMapReady(true);
+              }
+            });
+          } catch (error) {
+            console.error("Error initializing map:", error);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading Leaflet:", error);
       }
     };
 

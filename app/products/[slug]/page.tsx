@@ -170,7 +170,7 @@ export default async function ProductDetails({
       {/* Product Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Image */}
-        <div className="aspect-square rounded-2xl overflow-hidden bg-gray-100 relative">
+        <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 relative ">
           <Image
             src={
               product?.image?.trim?.() ||
@@ -181,8 +181,8 @@ export default async function ProductDetails({
             }
             alt={product?.name || "Product image"}
             fill
-            className="object-cover"
-            unoptimized
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover mix-blend-multiply"
           />
         </div>
 

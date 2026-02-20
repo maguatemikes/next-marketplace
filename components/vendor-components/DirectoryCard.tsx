@@ -57,12 +57,22 @@ export function DirectoryCard({ item }: DirectoryCardProps) {
       <div className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl hover:shadow-gray-900/10 hover:border-gray-300 transition-all duration-300">
         {/* Image */}
         <div className="relative h-48 overflow-hidden bg-gray-100">
-          <Image
-            src={item.image}
-            alt={item.title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-          />
+          {item.image ? (
+            <Image
+              src={item.image}
+              alt={item.title || "Product Image"}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : (
+            /* Fallback UI when image is missing */
+            <div className="flex items-center justify-center h-full w-full bg-gray-200 text-gray-400">
+              <span className="text-xs font-medium uppercase">
+                No Image Available
+              </span>
+            </div>
+          )}
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
 

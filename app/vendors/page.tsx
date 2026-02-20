@@ -9,6 +9,7 @@ interface DirectoryFilters {
   category?: string;
   page?: string;
   location?: string;
+  search?: string;
 }
 
 interface DirectoryResponse {
@@ -28,6 +29,7 @@ const fetchDirectoryList = async (
   if (filters.category) query.append("category", filters.category);
   if (filters.page) query.append("page", filters.page);
   if (filters.location) query.append("location", filters.location);
+  if (filters.search) query.append("search", filters.search);
 
   const response = await fetch(
     `https://shoplocal.kinsta.cloud/wp-json/custom-api-v3/v1/places?${query.toString()}`,
@@ -62,15 +64,21 @@ export default async function VendorsDirectoryPage({
     category?: string;
     page?: string;
     location: string;
+    search: string;
   }>;
 }) {
   // Await the searchParams promise (Next.js 15 requirement)
-  const { view, category, page, location } = await searchParams;
+  const { view, category, page, location, search } = await searchParams;
   const viewMode: ViewMode = view === "map" ? "map" : "grid";
 
   // Start fetching, but do NOT 'await' here.
   // Passing the raw promise allows Suspense to trigger the Skeleton.
-  const listingsPromise = fetchDirectoryList({ category, page, location });
+  const listingsPromise = fetchDirectoryList({
+    category,
+    page,
+    location,
+    search,
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">

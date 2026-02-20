@@ -24,7 +24,7 @@ interface Category {
 async function fetchCategories(): Promise<Category[]> {
   try {
     const response = await fetch(
-      "https://shoplocal.kinsta.cloud/wp-json/geodir/v2/places/categories",
+      "https://shoplocal.kinsta.cloud/wp-json/geodir/v2/places/categories?per_page=100",
       {
         headers: {
           Accept: "application/json",

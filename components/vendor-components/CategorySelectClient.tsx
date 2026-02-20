@@ -61,7 +61,7 @@ export function CategorySelectClient({
           <SelectItem value="all">All Categories</SelectItem>
           {categories.map((category) => (
             <SelectItem key={category.id} value={category.slug}>
-              {category.name} {category.count > 0 && `(${category.count})`}
+              {category.name}
             </SelectItem>
           ))}
         </SelectContent>
