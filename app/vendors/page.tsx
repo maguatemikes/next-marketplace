@@ -34,7 +34,7 @@ const fetchDirectoryList = async (
   const response = await fetch(
     `https://shoplocal.kinsta.cloud/wp-json/custom-api-v3/v1/places?${query.toString()}`,
     {
-      next: { revalidate: 3600 }, // ISR: Cache for 1 hour
+      next: { revalidate: 60, tags: ["vendor-directory"] }, // ISR: Cache for 1 hour
     },
   );
 

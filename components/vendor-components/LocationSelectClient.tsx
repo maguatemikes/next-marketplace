@@ -10,14 +10,23 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
+interface Location {
+  id: number;
+  name: string;
+  slug: string;
+  count: number;
+}
+
 interface LocationSelectClientProps {
   id: string;
   label?: string;
+  locations: Location[];
 }
 
 export function LocationSelectClient({
   id,
-  label = "location",
+  label = "City",
+  locations,
 }: LocationSelectClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -50,11 +59,12 @@ export function LocationSelectClient({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Cities</SelectItem>
-          <SelectItem value="new-york">New York</SelectItem>
-          <SelectItem value="los-angeles">Los Angeles</SelectItem>
-          <SelectItem value="chicago">Chicago</SelectItem>
-          <SelectItem value="san-francisco">San Francisco</SelectItem>
-          <SelectItem value="boston">Boston</SelectItem>
+          {locations.map((location) => (
+            <SelectItem key={location.id} value={location.slug}>
+              {location.name}{" "}
+              <span className="text-slate-500">({location.count})</span>
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>

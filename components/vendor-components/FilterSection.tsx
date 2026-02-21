@@ -46,6 +46,32 @@ async function fetchCategories(): Promise<Category[]> {
   }
 }
 
+// Server-side fetch for cities
+async function fetchCities(): Promise<Category[]> {
+  try {
+    const response = await fetch(
+      "https://shoplocal.kinsta.cloud/wp-json/wp/v2/place-city?per_page=100",
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        next: { revalidate: 3600 }, // Cache for 1 hour
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch cities");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching cities:", error);
+    return [];
+  }
+}
+
 // Async server component that fetches categories
 async function CategorySelectServer({
   id,
@@ -58,8 +84,20 @@ async function CategorySelectServer({
   return <CategorySelectClient id={id} label={label} categories={categories} />;
 }
 
-// Skeleton for category select
-function CategorySelectSkeleton({ label }: { label: string }) {
+// Async server component that fetches cities
+async function LocationSelectServer({
+  id,
+  label,
+}: {
+  id: string;
+  label: string;
+}) {
+  const cities = await fetchCities();
+  return <LocationSelectClient id={id} label={label} locations={cities} />;
+}
+
+// Skeleton for select components
+function SelectSkeleton({ label }: { label: string }) {
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium text-gray-700">{label}</Label>
@@ -69,6 +107,7 @@ function CategorySelectSkeleton({ label }: { label: string }) {
 }
 
 // FilterSection is NOT async - renders immediately
+// Parallel fetching happens automatically with separate Suspense boundaries! ⚡
 export function FilterSection({ viewMode }: FilterSectionProps) {
   // Vertical layout for grid view
   if (viewMode === "grid") {
@@ -82,12 +121,14 @@ export function FilterSection({ viewMode }: FilterSectionProps) {
         <SearchInputClient id="search" label="Search" />
 
         {/* Category Filter - Wrapped in Suspense ⏳ */}
-        <Suspense fallback={<CategorySelectSkeleton label="Category" />}>
+        <Suspense fallback={<SelectSkeleton label="Category" />}>
           <CategorySelectServer id="category" label="Category" />
         </Suspense>
 
-        {/* City Filter - Renders immediately ✅ */}
-        <LocationSelectClient id="city" label="City" />
+        {/* City Filter - Wrapped in Suspense ⏳ */}
+        <Suspense fallback={<SelectSkeleton label="City" />}>
+          <LocationSelectServer id="city" label="City" />
+        </Suspense>
 
         {/* Open Now Toggle - Renders immediately ✅ */}
         <OpenNowToggleClient id="open-now" label="Open Now" />
@@ -112,14 +153,16 @@ export function FilterSection({ viewMode }: FilterSectionProps) {
 
         {/* Category Filter - Wrapped in Suspense ⏳ */}
         <div className="min-w-40">
-          <Suspense fallback={<CategorySelectSkeleton label="Category" />}>
+          <Suspense fallback={<SelectSkeleton label="Category" />}>
             <CategorySelectServer id="category-h" label="Category" />
           </Suspense>
         </div>
 
-        {/* City Filter - Renders immediately ✅ */}
+        {/* City Filter - Wrapped in Suspense ⏳ */}
         <div className="min-w-40">
-          <LocationSelectClient id="city-h" label="City" />
+          <Suspense fallback={<SelectSkeleton label="City" />}>
+            <LocationSelectServer id="city-h" label="City" />
+          </Suspense>
         </div>
 
         {/* Open Now Toggle - Renders immediately ✅ */}

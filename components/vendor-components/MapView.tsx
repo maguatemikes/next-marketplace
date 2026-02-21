@@ -101,10 +101,10 @@ export function MapView({ items = [] }: MapViewProps) {
 
         const L = (window as any).L;
 
-        if (!L || !mounted) {
-          console.error("Leaflet failed to load");
-          return; // ✅ Exit early if Leaflet failed to load
-        }
+        // if (!L || !mounted) {
+        //   console.error("Leaflet failed to load");
+        //   return; // ✅ Exit early if Leaflet failed to load
+        // }
 
         // Wait a bit for Leaflet CSS to be fully applied
         await new Promise((resolve) => setTimeout(resolve, 100));

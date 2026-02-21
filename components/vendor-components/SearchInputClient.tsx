@@ -62,15 +62,19 @@ export function SearchInputClient({
         {label}
       </Label>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-4" />
         <Input
           id={id}
           type="text"
-          placeholder="Search businesses... (Press Enter)"
-          className="pl-10 h-10 bg-gray-50"
+          placeholder="Search businesses..."
+          className="pr-10 h-10 bg-gray-50"
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
           onKeyDown={handleKeyDown}
+        />
+        <Search
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-4 cursor-pointer hover:text-gray-600 transition-colors"
+          onClick={handleSearch}
+          aria-label="Search"
         />
       </div>
     </div>
