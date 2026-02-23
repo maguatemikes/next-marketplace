@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import {
   Star,
   DollarSign,
@@ -63,6 +64,116 @@ const fetchVendorDetailById = async (slug: string): Promise<VendorDetail> => {
   const data = await response.json();
   return data;
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+
+  try {
+    const detail = await fetchVendorDetailById(slug);
+
+    const title = detail.title?.raw || "Local Business";
+    const description = detail.content?.raw
+      ? detail.content.raw
+          .slice(0, 160)
+          .replace(/<[^>]*>/g, "")
+          .trim()
+      : `Visit ${title} - ${detail.post_category[0]?.name || "Local Business"} located at ${detail.street || "your area"}`;
+
+    const imageUrl =
+      detail.featured_image?.src ||
+      "https://shoplocal.com/og-default-vendor.jpg";
+    const category = detail.post_category[0]?.name || "Local Business";
+    const address = detail.street || "";
+
+    return {
+      title: `${title} | ShopLocal Business Directory`,
+      description,
+      keywords: [
+        title,
+        category,
+        "local business",
+        "shop local",
+        address,
+        detail.post_category.map((cat) => cat.name),
+      ]
+        .flat()
+        .filter(Boolean),
+
+      // Open Graph
+      openGraph: {
+        title: `${title} - ${category}`,
+        description,
+        url: `https://shoplocal.com/vendors/${slug}`,
+        siteName: "ShopLocal",
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: title,
+          },
+        ],
+        locale: "en_US",
+      },
+
+      // Twitter Card
+      twitter: {
+        card: "summary_large_image",
+        title: `${title} - ${category}`,
+        description,
+        images: [imageUrl],
+        creator: "@shoplocal",
+        site: "@shoplocal",
+      },
+
+      // Robots
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          "max-video-preview": -1,
+          "max-image-preview": "large",
+          "max-snippet": -1,
+        },
+      },
+
+      // Alternates
+      alternates: {
+        canonical: `https://shoplocal.com/vendors/${slug}`,
+      },
+
+      // Additional structured data for business
+      other: {
+        "business:contact_data:street_address": detail.street || "",
+        "business:contact_data:phone_number": detail.phone || "",
+        "business:contact_data:website": detail.website || "",
+        "business:contact_data:email": detail.email || "",
+        "geo.position":
+          detail.latitude && detail.longitude
+            ? `${detail.latitude};${detail.longitude}`
+            : "",
+        "geo.placename": title,
+      },
+    };
+  } catch (error) {
+    // Fallback metadata if fetch fails
+    return {
+      title: "Business Not Found | ShopLocal",
+      description:
+        "The requested business could not be found in our directory.",
+      robots: {
+        index: false,
+        follow: true,
+      },
+    };
+  }
+}
 
 export default async function VendorDetailPage({
   params,

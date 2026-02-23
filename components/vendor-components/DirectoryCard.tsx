@@ -5,7 +5,7 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { MapPin, Clock, Star, Check, ExternalLink } from "lucide-react";
+import { MapPin, Clock, Star, Check, ExternalLink, Store } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -22,6 +22,9 @@ export interface DirectoryItem {
   image: string;
   latitude: number;
   longitude: number;
+  vendor_id: number | null;
+  vendor_name: string | null;
+  vendor_slug: string | null;
 }
 
 interface DirectoryCardProps {
@@ -57,24 +60,15 @@ export function DirectoryCard({ item }: DirectoryCardProps) {
       <div className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl hover:shadow-gray-900/10 hover:border-gray-300 transition-all duration-300">
         {/* Image */}
         <div className="relative h-48 overflow-hidden bg-gray-100">
-          {item.image ? (
-            <Image
-              src={item.image}
-              alt={item.title || "Product Image"}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          ) : (
-            /* Fallback UI when image is missing */
-            <div className="flex items-center justify-center h-full w-full bg-gray-200 text-gray-400">
-              <span className="text-xs font-medium uppercase">
-                No Image Available
-              </span>
-            </div>
-          )}
+          <Image
+            src={item.image}
+            alt={item.title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            unoptimized
+          />
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
 
           {/* Claimed/Unclaimed Badge */}
           {isClaimed ? (
@@ -199,6 +193,13 @@ export function DirectoryCard({ item }: DirectoryCardProps) {
                 View Details
               </Button>
             </Link>
+            {item.vendor_id && item.vendor_slug && (
+              <Link href={`/store-front/${item.vendor_slug}`}>
+                <Button className=" bg-green-300 text-white rounded-md h-10 px-4 text-sm shadow-sm hover:bg-green-400 hover:text-white transition-all">
+                  <Store className="w-4 h-4" />
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Claim Listing Link */}

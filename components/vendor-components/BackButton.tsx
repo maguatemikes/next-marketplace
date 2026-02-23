@@ -7,7 +7,7 @@ export default function BackButton() {
   return (
     <button
       onClick={() => router.back()}
-      className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+      className="inline-flex items-center gap-2 px-4 py-2  text-black rounded-lg cursor-pointer"
     >
       <ArrowLeft className="w-4 h-4" />
       <span className="text-sm">Return to Directory</span>

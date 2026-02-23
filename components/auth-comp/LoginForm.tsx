@@ -82,7 +82,7 @@ export function LoginForm() {
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm text-gray-700">Password</label>
               <Link
-                href="/auth/forgot-password"
+                href="/forgot"
                 className="text-sm text-green-500 hover:text-green-600"
               >
                 Forgot?
@@ -148,7 +148,7 @@ export function LoginForm() {
 
         {/* Register link */}
         <p className="text-center mt-8 text-gray-600">
-          Don't have an account?{" "}
+          Dont have an account?{" "}
           <Link
             href="/register"
             className="text-green-500 hover:text-green-600 font-medium"
