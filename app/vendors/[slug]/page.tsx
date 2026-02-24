@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import {
+  ArrowLeft,
   Star,
   DollarSign,
   MapPin,
@@ -19,39 +20,107 @@ import { VendorDetailMap } from "@/components/vendor-components/VendorDetailMap"
 import BackButton from "@/components/vendor-components/BackButton";
 
 interface VendorDetail {
-  slug: string;
-  email: string;
-  street: string;
-  phone: string;
-  website: string;
-  latitude?: string;
-  longitude?: string;
-  post_category: Category[];
-  content: {
-    rendered: string;
+  id: string;
+  title: {
     raw: string;
+    rendered: string;
   };
-  featured_image?: {
+  slug: string;
+  link: string;
+  status: string;
+  type: string;
+  author: number;
+  date: string;
+  date_gmt: string;
+  modified: string;
+  modified_gmt: string;
+  content: {
+    raw: string;
+    rendered: string;
+    protected: boolean;
+  };
+
+  // Taxonomies
+  default_category: string;
+  post_category: Array<{
+    id: number;
+    name: string;
+    slug: string;
+  }>;
+  post_tags: Array<{
+    id: number;
+    name: string;
+    slug: string;
+  }>;
+
+  // ✅ FLAT LOCATION FIELDS (not nested)
+  street: string;
+  country: string;
+  region: string;
+  city: string;
+  zip: string;
+  latitude: string;
+  longitude: string;
+  mapview: any;
+  mapzoom: any;
+
+  // ✅ FLAT CONTACT FIELDS (not nested)
+  phone: string;
+  email: string;
+  website: string;
+  twitter: string;
+  facebook: string;
+  video: string;
+
+  // Business info
+  special_offers: string;
+  business_hours: any;
+  featured: boolean;
+  rating: string;
+  rating_count: number;
+  claimed: number; // 0 = not claimed, 1 = claimed
+
+  // ✅ FLAT VENDOR FIELDS (not nested)
+  vendor_id: number | null;
+  vendor_name: string | null;
+  vendor_slug: string | null;
+
+  // Media
+  featured_media: number | null;
+  featured_image: {
     id: string;
     title: string;
     src: string;
     thumbnail: string;
-  };
-  title: {
-    rendered: string;
-    raw: string;
-  };
-}
+    width: number;
+    height: number;
+  } | null;
+  images: Array<{
+    id: string;
+    title: string;
+    src: string;
+    thumbnail: string;
+    featured: boolean;
+    position: string;
+  }>;
 
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
+  // Meta
+  comment_status: string;
+  ping_status: string;
+  meta: {
+    _acf_changed: boolean;
+    footnotes: string;
+  };
+  guid: {
+    rendered: string;
+  };
+
+  _cached: boolean;
 }
 
 const fetchVendorDetailById = async (slug: string): Promise<VendorDetail> => {
   const response = await fetch(
-    `https://shoplocal.kinsta.cloud/wp-json/geodir/v2/places/${slug}`,
+    `https://shoplocal.kinsta.cloud/wp-json/custom-api-v3/v1/places/${slug}`,
     {
       headers: {
         Accept: "application/json",
@@ -61,10 +130,15 @@ const fetchVendorDetailById = async (slug: string): Promise<VendorDetail> => {
     },
   );
 
+  if (!response.ok) {
+    throw new Error("Failed to fetch vendor details");
+  }
+
   const data = await response.json();
   return data;
 };
 
+// ✅ Next.js 15 generateMetadata - Best Practice
 export async function generateMetadata({
   params,
 }: {
@@ -75,8 +149,8 @@ export async function generateMetadata({
   try {
     const detail = await fetchVendorDetailById(slug);
 
-    const title = detail.title?.raw || "Local Business";
-    const description = detail.content?.raw
+    const title = detail.title.rendered || "Local Business";
+    const description = detail.content.raw
       ? detail.content.raw
           .slice(0, 160)
           .replace(/<[^>]*>/g, "")
@@ -178,7 +252,7 @@ export async function generateMetadata({
 export default async function VendorDetailPage({
   params,
 }: {
-  params: Promise<VendorDetail>;
+  params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
 
@@ -217,33 +291,35 @@ export default async function VendorDetailPage({
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6">
               <div>
                 <h1 className="text-3xl text-gray-900 mb-3">
-                  {detail.title?.raw}
+                  {detail.title.rendered}
                 </h1>
 
                 <div className="flex items-center gap-4 mb-4">
                   <div className="flex items-center gap-2">
                     <div className="flex">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <Star className="w-4 h-4 text-gray-300" />
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-4 h-4 ${
+                            star <= Math.floor(parseFloat(detail.rating || "0"))
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
                     </div>
                     <span className="text-gray-600 text-sm">
-                      4.5 (3 reviews)
+                      {detail.rating} ({detail.rating_count} reviews)
                     </span>
-                  </div>
-
-                  <div className="flex items-center gap-1 text-gray-600">
-                    <DollarSign className="w-4 h-4" />
-                    <span className="text-sm">$10–30</span>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-gray-100 text-gray-900 text-xs rounded-lg">
-                    {detail.post_category[0]?.name}
-                  </span>
+                  {detail.post_category[0] && (
+                    <span className="px-3 py-1 bg-gray-100 text-gray-900 text-xs rounded-lg">
+                      {detail.post_category[0].name}
+                    </span>
+                  )}
                   <span className="px-3 py-1 bg-gray-100 text-gray-900 text-xs rounded-lg">
                     Local Business
                   </span>
@@ -310,8 +386,8 @@ export default async function VendorDetailPage({
 
               <div>
                 <Link
-                  href="/vendor/sample-business"
-                  className="w-full px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+                  href={`/store-front/${detail.vendor_slug}`}
+                  className="w-full px-6 py-3 bg-green-300 hover:bg-green-400 text-white rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
                 >
                   <Store className="w-5 h-5" />
                   <span>Visit Vendor Store</span>
@@ -359,9 +435,10 @@ export default async function VendorDetailPage({
 
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
               <h2 className="text-xl text-gray-900 mb-4">About</h2>
-              <p className="text-gray-600 leading-relaxed">
-                {detail.content.raw}
-              </p>
+              <div
+                className="text-gray-600 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: detail.content.rendered }}
+              />
             </div>
 
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
@@ -542,48 +619,96 @@ export default async function VendorDetailPage({
               <VendorDetailMap
                 latitude={detail.latitude}
                 longitude={detail.longitude}
-                title={detail.title.raw}
+                title={detail.title.rendered}
                 address={detail.street || "Address not available"}
               />
 
-              <div className="bg-white border-2 border-green-600 rounded-2xl p-6 shadow-lg">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center shrink-0">
-                    <Shield className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg text-gray-900">
-                        Verified Business
-                      </h3>
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+              {/* Conditional: Claimed vs Unclaimed Listing */}
+              {detail.claimed === 1 ? (
+                // ✅ CLAIMED LISTING
+                <div className="bg-white border-2 border-green-600 rounded-2xl p-6 shadow-lg">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center shrink-0">
+                      <Shield className="w-6 h-6 text-white" />
                     </div>
-                    <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                      This business has been verified by ShopLocal. The
-                      information is accurate and regularly updated.
-                    </p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg text-gray-900">
+                          Claimed Listing
+                        </h3>
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                      </div>
+                      <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                        This business has been claimed and verified by the
+                        owner. The information is accurate and regularly
+                        updated.
+                      </p>
 
-                    <div className="space-y-2 mb-4 bg-green-50 rounded-lg p-3 border border-green-200">
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span>Owner verified</span>
+                      <div className="space-y-2 mb-4 bg-green-50 rounded-lg p-3 border border-green-200">
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <span>Owner verified</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <span>Information accurate</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <span>Regularly updated</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span>Information accurate</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span>Regularly updated</span>
-                      </div>
+
+                      <button className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm flex items-center justify-center">
+                        Contact Business
+                      </button>
                     </div>
-
-                    <button className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm flex items-center justify-center">
-                      Contact Business
-                    </button>
                   </div>
                 </div>
-              </div>
+              ) : (
+                // ❌ UNCLAIMED LISTING
+                <div className="bg-white border-2 border-orange-400 rounded-2xl p-6 shadow-lg">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-orange-400 rounded-xl flex items-center justify-center shrink-0">
+                      <Shield className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg text-gray-900">
+                          Unclaimed Listing
+                        </h3>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                        This listing has not been claimed by the business owner
+                        yet. If you own this business, claim it to manage your
+                        information and connect with customers.
+                      </p>
+
+                      <div className="space-y-2 mb-4 bg-orange-50 rounded-lg p-3 border border-orange-200">
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <CheckCircle className="w-4 h-4 text-orange-500" />
+                          <span>Verify your ownership</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <CheckCircle className="w-4 h-4 text-orange-500" />
+                          <span>Update business info</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <CheckCircle className="w-4 h-4 text-orange-500" />
+                          <span>Respond to reviews</span>
+                        </div>
+                      </div>
+
+                      <Link
+                        href={`/sell/`}
+                        className="w-full px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors text-sm flex items-center justify-center"
+                      >
+                        Claim This Listing
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

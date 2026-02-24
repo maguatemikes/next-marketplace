@@ -72,12 +72,12 @@ export function DirectoryCard({ item }: DirectoryCardProps) {
 
           {/* Claimed/Unclaimed Badge */}
           {isClaimed ? (
-            <div className="absolute top-4 left-4 bg-green-600 text-white px-2.5 py-0.5 rounded-md text-xs font-medium shadow-lg backdrop-blur-sm flex items-center gap-1">
+            <div className="absolute top-4 left-4 bg-green-600 text-white px-2.5 py-0.5 rounded-sm text-[9px] shadow-lg backdrop-blur-sm flex items-center gap-1">
               <Check className="w-3 h-3" />
               VERIFIED
             </div>
           ) : (
-            <div className="absolute top-4 left-4 bg-amber-600 text-white px-3 py-1 rounded-md text-xs font-medium shadow-lg backdrop-blur-sm">
+            <div className="absolute top-4 left-4 bg-amber-600 text-white px-3 py-1 rounded-sm text-[9px] shadow-lg backdrop-blur-sm">
               UNCLAIMED
             </div>
           )}

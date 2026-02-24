@@ -156,7 +156,6 @@ export default async function Homepage() {
   const giftProducts = products.slice(20, 25);
   const featuredBrands = brands.slice(0, 8);
   const standardCategories = await fetchCategoryImage();
-  const showFirstFiveCategory = standardCategories.slice(0, 6);
 
   // Category icons mapping
   const categoryIcons: { [key: string]: any } = {
