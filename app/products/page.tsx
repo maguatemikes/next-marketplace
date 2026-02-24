@@ -32,7 +32,7 @@ const fetchProduct = async (
     const res = await fetch(
       `https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/products?${params.toString()}`,
       {
-        next: { revalidate: 60 },
+        next: { revalidate: 3600 },
         headers: { Accept: "application/json" },
       },
     );

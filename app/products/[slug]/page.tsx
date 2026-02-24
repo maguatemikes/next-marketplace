@@ -72,7 +72,7 @@ interface Product {
 const fetchProductBySlug = async (slug: string): Promise<Product> => {
   const res = await fetch(
     `https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/product-short/${slug}`,
-    { next: { revalidate: 60 } },
+    { next: { revalidate: 3600 } },
   );
   if (!res.ok) throw new Error("Failed to fetch product");
   const data = await res.json();
@@ -82,7 +82,7 @@ const fetchProductBySlug = async (slug: string): Promise<Product> => {
 const fetchRelatedProduct = async (slug: string): Promise<Product> => {
   const res = await fetch(
     `https://shoplocal.kinsta.cloud/wp-json/custom-api/v1/product/${slug}?ghhh`,
-    { next: { revalidate: 60 } },
+    { next: { revalidate: 3600 } },
   );
   const data = await res.json();
   return data;

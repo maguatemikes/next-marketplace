@@ -126,7 +126,7 @@ const fetchVendorDetailById = async (slug: string): Promise<VendorDetail> => {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      next: { revalidate: 300 },
+      next: { revalidate: 3600 },
     },
   );
 
