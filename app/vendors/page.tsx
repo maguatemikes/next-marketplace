@@ -25,38 +25,36 @@ interface DirectoryResponse {
 const fetchDirectoryList = async (
   filters: DirectoryFilters,
 ): Promise<DirectoryResponse> => {
-  const query = new URLSearchParams();
-  if (filters.category) query.append("category", filters.category);
-  if (filters.page) query.append("page", filters.page.toString());
-  if (filters.location) query.append("location", filters.location);
-  if (filters.search) query.append("search", filters.search);
+  // 1. Clean filters and convert to search params in one go
+  const cleanFilters = Object.fromEntries(
+    Object.entries(filters).filter(([_, v]) => v != null && v !== ""),
+  );
+  const query = new URLSearchParams(cleanFilters as Record<string, string>);
 
-  const queryString = query.toString();
-  const url = `https://shoplocal.kinsta.cloud/wp-json/custom-api-v3/v1/places${queryString ? `?${queryString}` : ""}`;
+  // 2. Build URL (Note: 'page=1' in your original might conflict with filters.page)
+  const baseUrl =
+    "https://shoplocal.kinsta.cloud/wp-json/custom-api-v3/v1/places";
+  const url = `${baseUrl}?${query.toString()}`;
 
   const response = await fetch(url, {
-    cache: "force-cache",
+    // Next.js 15: Use revalidate for time-based ISR
     next: {
+      revalidate: 3600, // Cache for 1 hour
       tags: ["listings"],
     },
   });
 
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch directory: ${response.status} ${response.statusText}`,
-    );
-  }
+  if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
 
   const result = await response.json();
 
-  // API returns pagination at root level, restructure to match our interface
   return {
-    data: result.data || [],
+    data: result.data ?? [],
     pagination: {
-      total: result.total || 0,
-      totalPages: result.totalPages || 1,
-      currentPage: result.currentPage || 1,
-      perPage: result.perPage || 9,
+      total: result.total ?? 0,
+      totalPages: result.totalPages ?? 1,
+      currentPage: result.currentPage ?? 1,
+      perPage: result.perPage ?? 9,
     },
   };
 };
