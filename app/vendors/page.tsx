@@ -32,7 +32,7 @@ const fetchDirectoryList = async (
   if (filters.search) query.append("search", filters.search);
 
   const response = await fetch(
-    `https://shoplocal.kinsta.cloud/wp-json/custom-api-v3/v1/places?${query.toString()}`,
+    `https://shoplocal.kinsta.cloud/wp-json/custom-api-v3/v1/places${query.toString()}`,
     {
       cache: "force-cache",
       next: { tags: ["listings"], revalidate: 3600 }, // ISR: Cache for 1 hour
