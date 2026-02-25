@@ -31,15 +31,20 @@ const fetchDirectoryList = async (
   if (filters.location) query.append("location", filters.location);
   if (filters.search) query.append("search", filters.search);
 
-  const response = await fetch(
-    `https://shoplocal.kinsta.cloud/wp-json/custom-api-v3/v1/places${query.toString()}`,
-    {
-      cache: "force-cache",
-      next: { tags: ["listings"], revalidate: 3600 }, // ISR: Cache for 1 hour
-    },
-  );
+  const queryString = query.toString();
+  const url = `https://shoplocal.kinsta.cloud/wp-json/custom-api-v3/v1/places${queryString ? `?${queryString}` : ""}`;
 
-  if (!response.ok) throw new Error("Failed to fetch directory");
+  const response = await fetch(url, {
+    next: {
+      tags: ["listing", "places"],
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch directory: ${response.status} ${response.statusText}`,
+    );
+  }
 
   const result = await response.json();
 
