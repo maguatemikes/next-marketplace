@@ -5,63 +5,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "shoplocal.kinsta.cloud",
-        port: "",
-        pathname: "/**", // Allow all paths (wp-content, images, etc.)
+        hostname: "**", // This allows any HTTPS domain (Next.js 14/15)
       },
       {
-        protocol: "https",
-        hostname: "feeds.frgimages.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "resource.logitech.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "dyson-h.assetsadobe2.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "assets.designerbrands.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "nb.scene7.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "pisces.bbystatic.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "s.wordpress.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "via.placeholder.com",
-        port: "",
-        pathname: "/**",
+        protocol: "http",
+        hostname: "**", // This allows any HTTP domain
       },
     ],
   },

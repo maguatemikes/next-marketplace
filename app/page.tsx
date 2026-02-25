@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import BrandCarousel from "@/components/home-comp/BrandCarousel";
+import BentoGrid from "@/components/home-comp/BentoGrid";
 
 // TypeScript interfaces
 interface Product {
@@ -140,6 +141,15 @@ const fetchCategoryImage = async () => {
   const data = await res.json();
   return data;
 };
+
+interface Promotion {
+  id: number;
+  promotionUrl: string;
+  imageUrl: string;
+  bannerWidth: number;
+  bannerHeight: number;
+  title: string;
+}
 
 export default async function Homepage() {
   // Fetch all data in parallel on the server

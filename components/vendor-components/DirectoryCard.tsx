@@ -25,6 +25,7 @@ export interface DirectoryItem {
   vendor_id: number | null;
   vendor_name: string | null;
   vendor_slug: string | null;
+  vendor_store: string | null;
 }
 
 interface DirectoryCardProps {
