@@ -27,7 +27,7 @@ const fetchDirectoryList = async (
 ): Promise<DirectoryResponse> => {
   const query = new URLSearchParams();
   if (filters.category) query.append("category", filters.category);
-  if (filters.page) query.append("page", filters.page);
+  if (filters.page) query.append("page", filters.page.toString());
   if (filters.location) query.append("location", filters.location);
   if (filters.search) query.append("search", filters.search);
 
@@ -35,8 +35,9 @@ const fetchDirectoryList = async (
   const url = `https://shoplocal.kinsta.cloud/wp-json/custom-api-v3/v1/places${queryString ? `?${queryString}` : ""}`;
 
   const response = await fetch(url, {
+    cache: "force-cache",
     next: {
-      tags: ["listing", "places"],
+      tags: ["listings"],
     },
   });
 
