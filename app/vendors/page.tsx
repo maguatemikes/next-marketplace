@@ -37,6 +37,10 @@ const fetchDirectoryList = async (
   const url = `${baseUrl}?${query.toString()}`;
 
   const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
     // Next.js 15: Use revalidate for time-based ISR
     next: {
       revalidate: 3600, // Cache for 1 hour

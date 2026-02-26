@@ -1,125 +1,76 @@
+import { Suspense } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { BentoLeft } from "@/components/home-comp/BentoLeft";
+import { BentoBottom } from "@/components/home-comp/BentoBottom";
 
-interface Banner {
-  imageUrl: string;
-}
-
-const fetchBannerType = async (): Promise<Banner | null> => {
-  const url =
-    "https://api.flexoffers.com/v3/promotions?bannerTypeIds=4&page=5&pageSize=1";
-
+// Helper for fetching
+const fetchTypeBanners = async (type: string): Promise<any[]> => {
   try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        // Use an environment variable for security
-        apiKey: "e046d538-fa83-4510-abe0-b8b15c576bfa",
+    const res = await fetch(
+      `https://api.flexoffers.com/v3/promotions?bannerTypeIds=${type}&page=1&pageSize=100`,
+      {
+        headers: {
+          Accept: "application/json",
+          apiKey: "e046d538-fa83-4510-abe0-b8b15c576bfa",
+        },
+        next: { revalidate: 3600 },
       },
-      // Next.js 15: optional caching configuration
-      next: { revalidate: 3600 },
-    });
-
-    if (!response.ok) throw new Error("Failed to fetch banner");
-
-    const data = await response.json();
-    // Assuming 'results' is an array; take the first item
-    return data.results?.[0] || null;
-  } catch (error) {
-    console.error(error);
-    return null;
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.results || [];
+  } catch {
+    return [];
   }
 };
 
-const BentoGrid = async () => {
-  const banner = await fetchBannerType();
+export default function BentoGrid() {
+  const fetchType4 = fetchTypeBanners("4");
+  const fetchType13 = fetchTypeBanners("13");
+
   return (
-    <section className="py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Card 1: Who are we? - LCP */}
-          <Link
-            href="/products?page=1&search=new+balance"
-            aria-label="View New Balance Shoes"
-            className="md:row-span-2 bg-[#6B7280] rounded-3xl overflow-hidden cursor-pointer group relative h-150"
-          >
-            <div className="absolute inset-0">
-              {banner?.imageUrl ? (
-                <Image
-                  src={banner.imageUrl}
-                  alt="New Balance Shoes"
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  priority
-                />
-              ) : null}
+    <div className="flex gap-4 max-w-[1130px] mx-auto sm:h-[600px] ">
+      {/* Left sidebar */}
+      <div className="sm:w-[160px] w-[60px] flex-shrink-0">
+        <Suspense fallback={<LeftSkeleton />}>
+          <BentoLeft bannersPromise={fetchType4} />
+        </Suspense>
+      </div>
 
-              <div className="absolute inset-0 bg-linear-to-b from-black/40 via-transparent to-black/40"></div>
-            </div>
-          </Link>
+      {/* Right content */}
+      <div className="flex-1 max-w-[950px] flex flex-col gap-4">
+        {/* Top Banner */}
+        <div className="relative sm:h-[340px] h-[135px] bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg overflow-hidden">
+          <Image
+            src="/hero-images/collage.png"
+            alt="collage"
+            fill
+            className="object-cover"
+          />
+        </div>
 
-          {/* Card 2 */}
-          <Link
-            href="/products?page=1&search=logitech"
-            className="bg-[#8B9BA8] rounded-3xl overflow-hidden cursor-pointer group relative h-[292px]"
-            aria-label="view logitech headphones"
-          >
-            <div className="absolute inset-0">
-              <Image
-                src="/hero-images/logictech.jpg"
-                alt="An image of logitech graphics for headphones"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-black/30"></div>
-            </div>
-          </Link>
-
-          {/* Card 3 */}
-          <Link
-            href="/products?page=1&search=new+era"
-            className="bg-[#8B7D7B] rounded-3xl overflow-hidden cursor-pointer group relative h-[292px]"
-            aria-label="browser our new era caps"
-          >
-            <div className="absolute inset-0">
-              <Image
-                src="/hero-images/caps.avif"
-                alt="new era caps"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-            </div>
-          </Link>
-
-          {/* Card 4 */}
-          <Link
-            href="/product/search"
-            className="lg:col-span-2 lg:col-start-2 bg-gradient-to-br from-[#FFF4E6] to-[#FFE8D6] rounded-3xl overflow-hidden cursor-pointer group h-[292px]"
-          >
-            <div className="h-full flex flex-col justify-between">
-              <div className="flex-1 flex items-center justify-center relative">
-                <Image
-                  src="/hero-images/apple-watch.webp"
-                  alt="apple watch series"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 66vw"
-                  loading="lazy"
-                />
-              </div>
-            </div>
-          </Link>
+        {/* Bottom section */}
+        <div className="flex-1">
+          <Suspense fallback={<BottomSkeleton />}>
+            <BentoBottom bannersPromise={fetchType13} />
+          </Suspense>
         </div>
       </div>
-    </section>
+    </div>
   );
-};
+}
 
-export default BentoGrid;
+// Keep Skeletons here or move to a separate file
+function LeftSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 h-full">
+      {[1, 2].map((i) => (
+        <div key={i} className="flex-1 bg-gray-200 animate-pulse rounded-lg" />
+      ))}
+    </div>
+  );
+}
+
+function BottomSkeleton() {
+  return <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg" />;
+}
