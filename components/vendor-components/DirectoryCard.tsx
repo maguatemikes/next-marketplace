@@ -189,14 +189,14 @@ export function DirectoryCard({ item }: DirectoryCardProps) {
           {/* Actions */}
           <div className="flex gap-3">
             <Link href={`/vendors/${item.ID}`} className="flex-1">
-              <Button className="w-full bg-[#F57C00] hover:bg-[#E67000] text-white rounded-md h-10 text-sm shadow-sm hover:shadow-md transition-all">
+              <Button className="w-full bg-brand-button hover:bg-brand-button text-white rounded-md h-10 text-sm ">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 View Details
               </Button>
             </Link>
             {item.vendor_id && item.vendor_slug && (
               <Link href={`/store-front/${item.vendor_slug}`}>
-                <Button className=" bg-green-300 text-white rounded-md h-10 px-4 text-sm shadow-sm hover:bg-green-400 hover:text-white transition-all">
+                <Button className=" bg-green-300 text-white rounded-md h-10 px-4 text-sm  hover:bg-green-400 hover:text-white ">
                   <Store className="w-4 h-4" />
                 </Button>
               </Link>

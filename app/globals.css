@@ -8,6 +8,13 @@ body {
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-brand-button: #0064ff;
+  --color-brand-primary: #00b4d8;
+  --color-brand-primary-light: #e2f2f9;
+  --color-brand-text: #111827;
+  --color-brand-muted: #6b7280;
+  --color-brand-text-on-button: #ffffff;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

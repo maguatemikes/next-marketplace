@@ -114,26 +114,12 @@ export function ProductCard({ product }: ProductCardProps) {
           {
             <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
               {product.isNew ? (
-                <span className="px-2.5 py-1 bg-green-600 text-white rounded-lg text-xs">
+                <span className="px-2.5 py-1 bg-brand-primary text-white rounded-lg text-xs">
                   New
                 </span>
               ) : null}
             </div>
           }
-
-          {/* Bottom Badges */}
-          <div className="absolute bottom-3 left-3 flex gap-2 z-10">
-            {product.acceptsOffers && (
-              <span className="px-2.5 py-1 bg-green-600 text-white rounded-lg text-xs flex items-center gap-1">
-                <Tag className="w-3 h-3" /> Offers
-              </span>
-            )}
-            {isLowStock && (
-              <span className="px-2.5 py-1 bg-amber-500 text-white rounded-lg text-xs">
-                Only {product.stock} left
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Product Info */}
@@ -177,7 +163,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
           <button
             onClick={handleAddToCart}
-            className="w-full mt-4 bg-[#F57C00] text-white px-4 py-2.5 rounded-md hover:bg-[#E67000] transition-colors text-sm flex items-center justify-center gap-2"
+            className="w-full mt-4 bg-brand-button text-white px-4 py-2.5 rounded-md hover:opacity-90 transition-colors text-sm flex items-center justify-center gap-2"
           >
             {product.isAffliate ? (
               <>

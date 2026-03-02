@@ -29,7 +29,7 @@ export default function BentoGrid() {
   const fetchType13 = fetchTypeBanners("13");
 
   return (
-    <div className="flex gap-4 max-w-[1130px] mx-auto sm:h-[600px] ">
+    <div className="flex gap-4 max-w-[1150px] mx-auto sm:h-[600px] ">
       {/* Left sidebar */}
       <div className="sm:w-[160px] w-[60px] flex-shrink-0">
         <Suspense fallback={<LeftSkeleton />}>

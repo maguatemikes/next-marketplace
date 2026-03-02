@@ -306,7 +306,7 @@ export function Footer() {
                   placeholder="Enter your email"
                   className="flex-1 px-4 py-2 rounded-md bg-white/10 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
-                <button className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors whitespace-nowrap">
+                <button className="px-6 py-2 bg-brand-button text-white rounded-md transition-colors whitespace-nowrap">
                   Subscribe
                 </button>
               </div>

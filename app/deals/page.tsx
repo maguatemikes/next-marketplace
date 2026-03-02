@@ -240,7 +240,7 @@ function ProductCard({
         {/* Actions */}
         <Button
           asChild
-          className="w-full bg-green-600 hover:bg-green-700 text-white rounded-md h-10 text-sm shadow-sm hover:shadow-md transition-all"
+          className="w-full bg-brand-primary text-white rounded-md h-10 text-sm shadow-sm hover:shadow-md transition-all"
           disabled={!product.inStock}
         >
           <Link href={`/products/${product.slug}`}>View Details</Link>

@@ -48,8 +48,8 @@ export function Navigation() {
             {/* Logo */}
             <Link href="/" className="cursor-pointer">
               <Image
-                src="/berlin-logo.png"
-                alt="Berlin logo"
+                src="/Motion-Computing-logo.png"
+                alt="Motion Computing"
                 width={100}
                 height={40}
                 className="h-12 w-auto"
@@ -107,7 +107,7 @@ export function Navigation() {
                         </Link>
                         <Link
                           href="/register"
-                          className="px-4 py-2 bg-[#F57C00] hover:bg-[#E67000] text-white rounded-md transition-colors text-sm"
+                          className="px-4 py-2 	bg-brand-button hover:opacity-90  text-white rounded-md transition-colors text-sm"
                         >
                           Sign Up
                         </Link>
@@ -144,7 +144,7 @@ export function Navigation() {
       </div>
 
       {/* Promo Bar - Green promotional banner */}
-      <div className="bg-green-500 text-white text-center py-2">
+      <div className="bg-brand-primary text-white text-center py-2">
         <p className="text-sm">
           <span className="font-semibold">Free Shipping</span> on Orders over
           $50 | <span className="font-semibold">Support Local Sellers</span>

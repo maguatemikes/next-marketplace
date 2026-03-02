@@ -5,11 +5,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**", // This allows any HTTPS domain (Next.js 14/15)
+        hostname: "**",
       },
       {
-        protocol: "http",
-        hostname: "**", // This allows any HTTP domain
+        protocol: "http", // Add this to allow non-SSL affiliate links
+        hostname: "**",
       },
     ],
   },

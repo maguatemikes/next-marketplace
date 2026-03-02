@@ -40,6 +40,7 @@ export function BentoBottom({ bannersPromise }: BentoBottomProps) {
                 height={250}
                 priority={i === 0}
                 className="w-full h-full object-fill"
+                unoptimized
               />
             </a>
           </div>

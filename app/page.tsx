@@ -18,6 +18,7 @@ import Link from "next/link";
 import Image from "next/image";
 import BrandCarousel from "@/components/home-comp/BrandCarousel";
 import BentoGrid from "@/components/home-comp/BentoGrid";
+import BrandContainer from "@/components/home-comp/BrandContainer";
 
 // TypeScript interfaces
 interface Product {
@@ -205,20 +206,7 @@ export default async function Homepage() {
       </section>
 
       {/* Our Brand Partners Carousel */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl text-gray-900">Our Brand Partners</h2>
-            <Link
-              href="/product/search"
-              className="text-gray-900 underline hover:text-gray-700"
-            >
-              View all brands
-            </Link>
-          </div>
-          <BrandCarousel brands={featuredBrands} />
-        </div>
-      </section>
+      <BrandContainer />
 
       {/* Discover our best of since 2018 */}
       <section className="py-16 bg-gray-50">
@@ -327,7 +315,7 @@ export default async function Homepage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <h2 className="text-3xl md:text-4xl text-gray-900 mb-2">
-              BerlinsMarket: Your Wholesale Product
+              Motion Computing: Your Wholesale Product
             </h2>
             <p className="text-3xl md:text-4xl text-gray-900">
               Source Across All Major Categories
@@ -544,7 +532,7 @@ export default async function Homepage() {
       </section>
 
       {/* What is ShopLocal? */}
-      <section className="py-20 bg-[#d2ffcc]">
+      <section className="py-20 bg-brand-primary-light">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-4xl text-gray-900 mb-2">
